@@ -65,12 +65,35 @@ secure-banking-app/
 - PostgreSQL 14+
 - Maven 3.8+
 
+### Configuration Base de Données
+
+1. **Installer PostgreSQL 14+**
+2. **Créer la base de données :**
+```sql
+CREATE DATABASE secure_banking_db;
+```
+3. **Configurer les paramètres (voir section Backend ci-dessous)**
+
 ### Backend
+
+1. **Configurer les propriétés de l'application :**
+```bash
+cd backend/src/main/resources
+cp application.properties.example application.properties
+```
+
+2. **Éditer `application.properties` avec vos paramètres :**
+   - Remplacer `YOUR_DATABASE_PASSWORD_HERE` par votre mot de passe PostgreSQL
+   - Remplacer `YOUR_ADMIN_PASSWORD_HERE` par un mot de passe admin sécurisé
+
+3. **Lancer l'application :**
 ```bash
 cd backend
 mvn clean install
 mvn spring-boot:run
 ```
+
+**Application accessible sur :** http://localhost:8080
 
 ### Frontend
 ```bash
