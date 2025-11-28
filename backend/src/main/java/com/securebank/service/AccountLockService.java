@@ -118,8 +118,7 @@ public class AccountLockService {
      */
     private void sendSecurityNotification(String email) {
         try {
-            // TODO: Créer template email de sécurité
-            System.out.println("📧 Notification de sécurité envoyée à: " + email);
+            emailService.sendSecurityAlert(email);
         } catch (Exception e) {
             System.err.println("❌ Erreur envoi notification: " + e.getMessage());
         }
