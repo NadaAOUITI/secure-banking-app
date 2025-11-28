@@ -6,6 +6,7 @@ import com.securebank.dto.UserRegistrationDto;
 import com.securebank.exception.PasswordMismatchException;
 import com.securebank.exception.UserAlreadyExistsException;
 import com.securebank.model.User;
+import com.securebank.service.AccountLockService;
 import com.securebank.service.OtpService;
 import com.securebank.service.SessionService;
 import com.securebank.service.UserService;
@@ -29,12 +30,14 @@ public class AuthController {
     private final UserService userService;
     private final OtpService otpService;
     private final SessionService sessionService;
+    private final AccountLockService accountLockService;
     
     @Autowired
-    public AuthController(UserService userService, OtpService otpService, SessionService sessionService) {
+    public AuthController(UserService userService, OtpService otpService, SessionService sessionService, AccountLockService accountLockService) {
         this.userService = userService;
         this.otpService = otpService;
         this.sessionService = sessionService;
+        this.accountLockService = accountLockService;
     }
     
     /**
@@ -125,7 +128,8 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<Map<String, Object>> login(
             @Valid @RequestBody LoginRequestDto loginRequest,
-            BindingResult bindingResult) {
+            BindingResult bindingResult,
+            HttpServletRequest request) {
         
         Map<String, Object> response = new HashMap<>();
         
@@ -146,14 +150,41 @@ public class AuthController {
                 return ResponseEntity.badRequest().body(response);
             }
             
+            String email = loginRequest.getEmail();
+            
+            // Vérifier si le compte est verrouillé
+            if (userService.isAccountLocked(email)) {
+                long failedAttempts = userService.getFailedAttemptsCount(email);
+                accountLockService.recordLoginAttempt(email, false, "Compte verrouillé", request);
+                
+                response.put("success", false);
+                response.put("message", "Compte temporairement verrouillé après " + failedAttempts + " tentatives échouées. Réessayez dans 30 minutes.");
+                response.put("accountLocked", true);
+                return ResponseEntity.status(HttpStatus.LOCKED).body(response);
+            }
+            
             // Authentifier l'utilisateur
-            User user = userService.authenticateUser(loginRequest.getEmail(), loginRequest.getPassword());
+            User user = userService.authenticateUser(email, loginRequest.getPassword());
             
             if (user == null) {
+                // Enregistrer la tentative échouée
+                accountLockService.recordLoginAttempt(email, false, "Mot de passe incorrect", request);
+                
+                long failedAttempts = userService.getFailedAttemptsCount(email);
+                String message = "Email ou mot de passe incorrect";
+                
+                if (failedAttempts >= 3) {
+                    message += ". Attention: " + failedAttempts + "/5 tentatives échouées.";
+                }
+                
                 response.put("success", false);
-                response.put("message", "Email ou mot de passe incorrect");
+                response.put("message", message);
+                response.put("failedAttempts", failedAttempts);
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
             }
+            
+            // Enregistrer la tentative réussie
+            accountLockService.recordLoginAttempt(email, true, null, request);
             
             // Générer et envoyer l'OTP
             otpService.generateAndSendOtp(user.getEmail());
@@ -207,6 +238,9 @@ public class AuthController {
             boolean isValidOtp = otpService.verifyOtp(otpRequest.getEmail(), otpRequest.getOtpCode());
             
             if (!isValidOtp) {
+                // Enregistrer la tentative OTP échouée
+                accountLockService.recordLoginAttempt(otpRequest.getEmail(), false, "Code OTP invalide", request);
+                
                 response.put("success", false);
                 response.put("message", "Code de vérification invalide ou expiré");
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);

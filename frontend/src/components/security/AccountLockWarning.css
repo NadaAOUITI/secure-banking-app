@@ -1,0 +1,52 @@
+.account-lock-warning {
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.account-lock-warning.medium {
+    background-color: #fff3cd;
+    border: 1px solid #ffeaa7;
+    color: #856404;
+}
+
+.account-lock-warning.high {
+    background-color: #f8d7da;
+    border: 2px solid #dc3545;
+    color: #721c24;
+}
+
+.account-lock-warning.locked {
+    background-color: #f8d7da;
+    border: 2px solid #dc3545;
+    color: #721c24;
+    flex-direction: column;
+    text-align: center;
+}
+
+.lock-icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.warning-icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.warning-content p {
+    margin: 0.25rem 0;
+}
+
+.lockout-details {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(0,0,0,0.1);
+}
+
+.lockout-details p {
+    margin: 0.5rem 0;
+}
