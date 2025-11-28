@@ -55,6 +55,9 @@ secure-banking-app/
 
 #### 2. Security & Encryption
 - [ ] **Implement TLS/SSL encryption for all client-server communication**
+      Generate a Keystore
+
+Use keytool to create a self-signed certificate (for development/testing): done 
 - [ ] **Use a secure backend framework (Spring Boot + Spring Security)**
 - [ ] **Implement input validation and sanitization to prevent injection attacks**
 
