@@ -43,6 +43,8 @@ public class SecurityConfig {
     
     /**
      * Configuration CORS pour permettre les requêtes du frontend
+     * celle-là est le port entre le backend et le frontend
+     * it's like saying "it's okay to take and give info from the frontend"
      */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {

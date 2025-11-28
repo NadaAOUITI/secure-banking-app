@@ -10,6 +10,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.Optional;
+
 @Service
 @Transactional
 public class UserService {
@@ -71,5 +74,28 @@ public class UserService {
      */
     public boolean emailExists(String email) {
         return userRepository.existsByEmail(email);
+    }
+    
+    /**
+     * Authentifie un utilisateur avec email et mot de passe
+     * @param email l'email de l'utilisateur
+     * @param password le mot de passe
+     * @return l'utilisateur si authentification réussie, null sinon
+     */
+    public User authenticateUser(String email, String password) {
+        Optional<User> userOpt = userRepository.findByEmail(email);
+        
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            
+            // Vérifier le mot de passe
+            if (passwordEncoder.matches(password, user.getPassword())) {
+                // Mettre à jour la dernière connexion
+                user.setLastLoginAt(LocalDateTime.now());
+                return userRepository.save(user);
+            }
+        }
+        
+        return null;
     }
 }
