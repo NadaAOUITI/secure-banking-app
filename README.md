@@ -59,6 +59,19 @@ secure-banking-app/
 
 ## 🛠️ Installation
 
+### Cloner le Dépôt
+
+```bash
+# Cloner le dépôt avec HTTPS
+git clone https://github.com/NadaAOUITI/secure-banking-app.git
+
+# Ou cloner avec SSH
+git clone git@github.com:NadaAOUITI/secure-banking-app.git
+
+# Accéder au dossier du projet
+cd secure-banking-app
+```
+
 ### Prérequis
 - Java 17+
 - Node.js 18+
