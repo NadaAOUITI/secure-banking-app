@@ -21,7 +21,7 @@ Développement d'une application bancaire Web sécurisée avec focus sur :
 - **Backend**: Spring Boot 3.x + Spring Security 6.x
 - **Frontend**: React 18 + JavaScript
 - **Base de données**: PostgreSQL
-- **Authentification**: JWT + Spring Security + OTP Email
+- **Authentification**: sessions + Spring Security + OTP Email
 - **Communication**: HTTPS/TLS 1.3
 - **Tests**: JUnit 5, React Testing Library
 
