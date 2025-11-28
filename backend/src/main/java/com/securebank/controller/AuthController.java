@@ -7,6 +7,7 @@ import com.securebank.exception.PasswordMismatchException;
 import com.securebank.exception.UserAlreadyExistsException;
 import com.securebank.model.User;
 import com.securebank.service.OtpService;
+import com.securebank.service.SessionService;
 import com.securebank.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -26,11 +28,13 @@ public class AuthController {
     
     private final UserService userService;
     private final OtpService otpService;
+    private final SessionService sessionService;
     
     @Autowired
-    public AuthController(UserService userService, OtpService otpService) {
+    public AuthController(UserService userService, OtpService otpService, SessionService sessionService) {
         this.userService = userService;
         this.otpService = otpService;
+        this.sessionService = sessionService;
     }
     
     /**
@@ -177,7 +181,8 @@ public class AuthController {
     @PostMapping("/verify-otp")
     public ResponseEntity<Map<String, Object>> verifyOtp(
             @Valid @RequestBody OtpVerificationDto otpRequest,
-            BindingResult bindingResult) {
+            BindingResult bindingResult,
+            HttpServletRequest request) {
         
         Map<String, Object> response = new HashMap<>();
         
@@ -216,6 +221,9 @@ public class AuthController {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
             }
             
+            // Créer une session sécurisée
+            sessionService.createUserSession(request, user.getEmail());
+            
             // Connexion réussie
             Map<String, Object> userData = new HashMap<>();
             userData.put("id", user.getId());
@@ -225,8 +233,9 @@ public class AuthController {
             userData.put("lastLoginAt", user.getLastLoginAt());
             
             response.put("success", true);
-            response.put("message", "Connexion réussie");
+            response.put("message", "Connexion réussie - Session créée");
             response.put("user", userData);
+            response.put("sessionTimeout", 900); // 15 minutes
             
             return ResponseEntity.ok(response);
             

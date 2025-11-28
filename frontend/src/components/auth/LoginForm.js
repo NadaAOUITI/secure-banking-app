@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { authService } from '../../services/authService';
 import './LoginForm.css';
 
-const LoginForm = () => {
+const LoginForm = ({ onLoginSuccess }) => {
   const [step, setStep] = useState(1); // 1: Login, 2: OTP
   const [formData, setFormData] = useState({
     email: '',
@@ -109,8 +109,10 @@ const LoginForm = () => {
       
       if (response.success) {
         setSuccessMessage('Connexion réussie ! Bienvenue ' + response.user.firstName);
-        // TODO: Rediriger vers le dashboard
-        console.log('Utilisateur connecté:', response.user);
+        // Rediriger vers le dashboard
+        setTimeout(() => {
+          onLoginSuccess(response.user);
+        }, 1500);
       } else {
         setErrors({ general: [response.message || 'Code OTP invalide'] });
       }
