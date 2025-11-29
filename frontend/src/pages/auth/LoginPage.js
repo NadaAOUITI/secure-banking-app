@@ -1,10 +1,10 @@
 import React from 'react';
 import LoginForm from '../../components/auth/LoginForm';
 
-const LoginPage = () => {
+const LoginPage = ({ onLoginSuccess }) => {
   return (
     <div className="login-page">
-      <LoginForm />
+      <LoginForm onLoginSuccess={onLoginSuccess} />
     </div>
   );
 };

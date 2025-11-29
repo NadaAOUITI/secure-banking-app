@@ -19,11 +19,13 @@ public class UserService {
     
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AccountLockService accountLockService;
     
     @Autowired
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, AccountLockService accountLockService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.accountLockService = accountLockService;
     }
     
     /**
@@ -83,6 +85,11 @@ public class UserService {
      * @return l'utilisateur si authentification réussie, null sinon
      */
     public User authenticateUser(String email, String password) {
+        // Vérifier si le compte est verrouillé
+        if (accountLockService.isAccountLocked(email)) {
+            return null; // Compte verrouillé
+        }
+        
         Optional<User> userOpt = userRepository.findByEmail(email);
         
         if (userOpt.isPresent()) {
@@ -97,5 +104,19 @@ public class UserService {
         }
         
         return null;
+    }
+    
+    /**
+     * Vérifie si un compte est verrouillé
+     */
+    public boolean isAccountLocked(String email) {
+        return accountLockService.isAccountLocked(email);
+    }
+    
+    /**
+     * Obtient le nombre de tentatives échouées
+     */
+    public long getFailedAttemptsCount(String email) {
+        return accountLockService.getFailedAttemptsCount(email);
     }
 }

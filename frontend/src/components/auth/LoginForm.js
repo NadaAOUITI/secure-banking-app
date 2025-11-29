@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { authService } from '../../services/authService';
+import AccountLockWarning from '../security/AccountLockWarning';
 import './LoginForm.css';
 
-const LoginForm = () => {
+const LoginForm = ({ onLoginSuccess }) => {
   const [step, setStep] = useState(1); // 1: Login, 2: OTP
   const [formData, setFormData] = useState({
     email: '',
@@ -12,6 +13,8 @@ const LoginForm = () => {
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+  const [accountLocked, setAccountLocked] = useState(false);
+  const [failedAttempts, setFailedAttempts] = useState(0);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -79,10 +82,20 @@ const LoginForm = () => {
       });
       
       if (response.success && response.requiresOtp) {
-        setStep(2); // Passer à l'étape OTP
+        setStep(2);
         setSuccessMessage('Code de vérification envoyé par email');
+        setAccountLocked(false);
+        setFailedAttempts(0);
       } else {
-        setErrors({ general: [response.message || 'Erreur lors de la connexion'] });
+        // Gérer le verrouillage de compte
+        if (response.accountLocked) {
+          setAccountLocked(true);
+          setErrors({ general: [response.message] });
+        } else {
+          setAccountLocked(false);
+          setFailedAttempts(response.failedAttempts || 0);
+          setErrors({ general: [response.message || 'Erreur lors de la connexion'] });
+        }
       }
     } catch (error) {
       setErrors({ general: ['Erreur de connexion au serveur'] });
@@ -109,8 +122,10 @@ const LoginForm = () => {
       
       if (response.success) {
         setSuccessMessage('Connexion réussie ! Bienvenue ' + response.user.firstName);
-        // TODO: Rediriger vers le dashboard
-        console.log('Utilisateur connecté:', response.user);
+        // Rediriger vers le dashboard
+        setTimeout(() => {
+          onLoginSuccess(response.user);
+        }, 1500);
       } else {
         setErrors({ general: [response.message || 'Code OTP invalide'] });
       }
@@ -137,7 +152,13 @@ const LoginForm = () => {
           <div className="success-message">{successMessage}</div>
         )}
         
-        {errors.general && (
+        <AccountLockWarning 
+          failedAttempts={failedAttempts}
+          maxAttempts={5}
+          isLocked={accountLocked}
+        />
+        
+        {errors.general && !accountLocked && (
           <div className="error-message">
             {errors.general.map((error, index) => (
               <div key={index}>{error}</div>
@@ -190,9 +211,9 @@ const LoginForm = () => {
             <button 
               type="submit" 
               className="submit-button"
-              disabled={isLoading}
+              disabled={isLoading || accountLocked}
             >
-              {isLoading ? 'Connexion en cours...' : 'Se connecter'}
+              {accountLocked ? 'Compte verrouillé' : (isLoading ? 'Connexion en cours...' : 'Se connecter')}
             </button>
           </>
         )}
