@@ -29,10 +29,10 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/**").permitAll() // Endpoints d'authentification publics
                 .anyRequest().authenticated() // Toutes les autres requêtes nécessitent une authentification
             );
-        
+
         return http.build();
     }
-    
+
     /**
      * Encodeur de mot de passe BCrypt
      */
@@ -58,4 +58,5 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
+
 }
