@@ -130,7 +130,8 @@ Pour supprimer l'avertissement du navigateur :
 
 **5.1 - Exporter le certificat :**
 ```powershell
-keytool -exportcert -alias securebank -keystore securebank.p12 -file securebank.crt -storepass securebank```
+keytool -exportcert -alias securebank -keystore securebank.p12 -file securebank.crt -storepass securebank
+```
 
 **5.2 - Ouvrir PowerShell en Administrateur et importer :**
 ```powershell
