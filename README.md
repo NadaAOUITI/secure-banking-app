@@ -48,6 +48,9 @@ secure-banking-app/
 
 #### 2. Account Management
 - ✅ **View account details (balance, account number, personal info)**
+- ✅ **Add new bank accounts with card selection**
+- ✅ **Multiple account management and display**
+- ✅ **Secure account creation with validation**
 
 #### 3. Database Setup
 - ✅ **PostgreSQL database configuration and connection**
@@ -55,9 +58,9 @@ secure-banking-app/
 ### 🔄 **Tâches En Cours**
 
 #### 2. Account Management
-- [ ] Update personal info (phone number, email)
-- [ ] Change password securely
-- [ ] Ensure data validation to prevent injection attacks
+- ✅ **Update personal info (phone number, email)**
+- ✅ **Change password securely**
+- ✅ **Ensure data validation to prevent injection attacks**
 
 #### 3. Security & Encryption
 - [ ] **Implement TLS/SSL encryption for all client-server communication**

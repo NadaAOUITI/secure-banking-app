@@ -22,3 +22,10 @@ export const maskPhone = (phone) => {
   if (!phone || phone.length <= 4) return phone;
   return phone.substring(0, 2) + '***' + phone.substring(phone.length - 2);
 };
+
+export const maskCardNumber = (cardNumber) => {
+  if (!cardNumber || cardNumber.length < 8) return cardNumber;
+  const cleaned = cardNumber.replace(/\s/g, '');
+  const lastFour = cleaned.substring(cleaned.length - 4);
+  return '**** **** **** ' + lastFour;
+};

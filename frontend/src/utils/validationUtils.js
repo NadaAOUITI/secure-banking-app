@@ -134,6 +134,35 @@ export const validateDocumentNumber = (docNumber) => {
   return { isValid: true, sanitized: sanitized.toUpperCase() };
 };
 
+export const validateAmount = (amount, minAmount = 0, maxAmount = Number.MAX_SAFE_INTEGER) => {
+  const sanitized = sanitizeInput(String(amount));
+  const numAmount = parseFloat(sanitized);
+  
+  if (!sanitized || sanitized === '') {
+    return { isValid: false, message: 'Montant requis' };
+  }
+  
+  if (isNaN(numAmount)) {
+    return { isValid: false, message: 'Montant invalide' };
+  }
+  
+  if (numAmount < minAmount) {
+    return { isValid: false, message: `Montant minimum: ${minAmount} TND` };
+  }
+  
+  if (numAmount > maxAmount) {
+    return { isValid: false, message: `Montant maximum: ${maxAmount.toLocaleString()} TND` };
+  }
+  
+  // Check for reasonable decimal places (max 3 for TND)
+  const decimalPlaces = (sanitized.split('.')[1] || '').length;
+  if (decimalPlaces > 3) {
+    return { isValid: false, message: 'Maximum 3 décimales autorisées' };
+  }
+  
+  return { isValid: true, sanitized: numAmount };
+};
+
 export const checkEmailExists = async (email) => {
   try {
     const response = await fetch(`http://localhost:8080/api/auth/check-email?email=${encodeURIComponent(email)}`);

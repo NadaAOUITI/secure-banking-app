@@ -3,8 +3,10 @@ package com.securebank.service;
 import com.securebank.dto.AccountDetailsDto;
 import com.securebank.model.User;
 import com.securebank.model.BankAccount;
+import com.securebank.model.BankCard;
 import com.securebank.repository.UserRepository;
 import com.securebank.repository.BankAccountRepository;
+import com.securebank.repository.BankCardRepository;
 import com.securebank.util.EncryptionUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -26,6 +28,9 @@ public class AccountService {
     private BankAccountRepository bankAccountRepository;
     
     @Autowired
+    private BankCardRepository bankCardRepository;
+    
+    @Autowired
     private EncryptionUtil encryptionUtil;
 
     /**
@@ -44,21 +49,36 @@ public class AccountService {
         String decryptedCountry = user.getCountryEncrypted() != null ? encryptionUtil.decrypt(user.getCountryEncrypted()) : null;
         String decryptedAddress = user.getAddressEncrypted() != null ? encryptionUtil.decrypt(user.getAddressEncrypted()) : null;
 
-        // Récupération du compte bancaire principal
+        // Récupération de tous les comptes bancaires actifs
         List<BankAccount> accounts = bankAccountRepository.findByUserAndIsActiveTrue(user);
-        BankAccount primaryAccount = accounts.isEmpty() ? null : accounts.get(0);
         
-        // Construction du DTO avec les données déchiffrées
+        // Récupération des cartes pour chaque compte
+        List<List<BankCard>> accountCards = accounts.stream()
+            .map(account -> {
+                List<BankCard> cards = bankCardRepository.findByAccountAndIsActiveTrue(account);
+                // Déchiffrer les données des cartes
+                cards.forEach(card -> {
+                    if (card.getCardNumberEncrypted() != null) {
+                        card.setCardNumberEncrypted(encryptionUtil.decrypt(card.getCardNumberEncrypted()));
+                    }
+                    if (card.getExpiryDateEncrypted() != null) {
+                        card.setExpiryDateEncrypted(encryptionUtil.decrypt(card.getExpiryDateEncrypted()));
+                    }
+                });
+                return cards;
+            })
+            .collect(java.util.stream.Collectors.toList());
+        
+        // Construction du DTO avec tous les comptes et cartes
         return new AccountDetailsDto(
-            primaryAccount != null ? primaryAccount.getAccountNumber() : "Aucun compte",
-            primaryAccount != null ? primaryAccount.getBalance() : java.math.BigDecimal.ZERO,
+            accounts,
+            accountCards,
             user.getFirstName(),
             user.getLastName(),
             user.getEmail(),
             decryptedPhone,
             decryptedCountry,
             decryptedAddress,
-            primaryAccount != null ? primaryAccount.getAccountType().name() : "AUCUN",
             "TND"
         );
     }
