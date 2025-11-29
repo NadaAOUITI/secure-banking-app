@@ -1,5 +1,11 @@
 package com.securebank.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.stereotype.Service;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -9,6 +15,9 @@ import java.time.LocalDateTime;
 public class SessionService {
     
     private static final int SESSION_TIMEOUT = 900; // 15 minutes en secondes
+    
+    @Autowired
+    private UserDetailsService userDetailsService;
     
     /**
      * Crée une nouvelle session sécurisée pour l'utilisateur
@@ -21,6 +30,16 @@ public class SessionService {
         session.setAttribute("userEmail", userEmail);
         session.setAttribute("loginTime", LocalDateTime.now());
         session.setAttribute("lastActivity", LocalDateTime.now());
+        
+        // IMPORTANT: Authentifier l'utilisateur dans Spring Security
+        UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
+        UsernamePasswordAuthenticationToken authToken = 
+            new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(authToken);
+        
+        // Sauvegarder le SecurityContext dans la session
+        session.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, 
+                           SecurityContextHolder.getContext());
         
         System.out.println("✅ Session créée pour: " + userEmail + " (ID: " + session.getId() + ")");
     }

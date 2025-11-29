@@ -46,25 +46,27 @@ secure-banking-app/
 - ✅ **Implement session management (timeout after inactivity)**
 - ✅ **Log failed login attempts and lock account after repeated failures**
 
-#### 2. Database Setup
+#### 2. Account Management
+- ✅ **View account details (balance, account number, personal info)**
+
+#### 3. Database Setup
 - ✅ **PostgreSQL database configuration and connection**
 
 ### 🔄 **Tâches En Cours**
 
-#### 2. Security & Encryption
+#### 2. Account Management
+- [ ] Update personal info (phone number, email)
+- [ ] Change password securely
+- [ ] Ensure data validation to prevent injection attacks
+
+#### 3. Security & Encryption
 - [ ] **Implement TLS/SSL encryption for all client-server communication**
 - [ ] **Use a secure backend framework (Spring Boot + Spring Security)**
 - [ ] **Implement input validation and sanitization to prevent injection attacks**
 
 ### 📋 **Tâches Restantes**
 
-#### 2. Account Management
-- [ ] View account details (balance, account number, personal info)
-- [ ] Update personal info (phone number, email)
-- [ ] Change password securely
-- [ ] Ensure data validation to prevent injection attacks
-
-#### 3. Beneficiary Management
+#### 4. Beneficiary Management
 - [ ] Add a beneficiary (same bank, national bank, international bank)
 - [ ] Edit or remove beneficiary details
 - [ ] Validate beneficiary account numbers before adding

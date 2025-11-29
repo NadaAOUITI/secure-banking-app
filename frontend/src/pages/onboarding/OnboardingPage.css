@@ -1,0 +1,39 @@
+.onboarding-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #90EE90 0%, #006400 100%);
+  position: relative;
+  padding: 20px 0;
+}
+
+.onboarding-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.background-pattern {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 75% 75%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+  background-size: 100px 100px;
+  animation: float 20s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-20px) rotate(180deg); }
+}
+
+.onboarding-page .onboarding-container {
+  position: relative;
+  z-index: 1;
+}

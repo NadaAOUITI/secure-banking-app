@@ -21,17 +21,37 @@ public class EmailService {
     }
     
     /**
-     * Envoie un email avec le code OTP
+     * Envoie un email avec le code OTP (login - 5 minutes)
      */
     public void sendOtpEmail(String toEmail, String otpCode) {
+        sendOtpEmail(toEmail, otpCode, 5, "login");
+    }
+    
+    /**
+     * Envoie un email avec le code OTP pour onboarding
+     */
+    public void sendOnboardingOtpEmail(String toEmail, String otpCode, int expiryMinutes) {
+        sendOtpEmail(toEmail, otpCode, expiryMinutes, "onboarding");
+    }
+    
+    /**
+     * Envoie un email avec le code OTP avec durée personnalisée
+     */
+    private void sendOtpEmail(String toEmail, String otpCode, int expiryMinutes, String context) {
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
             
             helper.setFrom(fromEmail);
             helper.setTo(toEmail);
-            helper.setSubject("🔐 Code de vérification - Secure Banking");
-            helper.setText(buildOtpEmailTemplate(otpCode), true);
+            
+            if ("onboarding".equals(context)) {
+                helper.setSubject("🔐 Vérification Email - Création de Compte");
+                helper.setText(buildOnboardingOtpEmailTemplate(otpCode, expiryMinutes), true);
+            } else {
+                helper.setSubject("🔐 Code de vérification - Secure Banking");
+                helper.setText(buildOtpEmailTemplate(otpCode), true);
+            }
             
             mailSender.send(message);
             System.out.println("✅ Email envoyé à: " + toEmail);
@@ -53,7 +73,34 @@ public class EmailService {
     }
     
     /**
-     * Template HTML pour l'email OTP
+     * Template HTML pour l'email OTP onboarding
+     */
+    private String buildOnboardingOtpEmailTemplate(String otpCode, int expiryMinutes) {
+        String expiryText = expiryMinutes == 1 ? "1 minute" : expiryMinutes + " minutes";
+        
+        return "<html>" +
+               "<head><meta charset=\"UTF-8\"><title>Vérification Email</title></head>" +
+               "<body style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;\">" +
+               "<div style=\"background: linear-gradient(135deg, #90EE90 0%, #006400 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;\">" +
+               "<h1 style=\"color: white; margin: 0;\">🏦 Secure Banking</h1>" +
+               "<p style=\"color: #f0fff0; margin: 10px 0 0 0;\">Création de votre compte</p>" +
+               "</div>" +
+               "<div style=\"background: white; padding: 40px; border-radius: 0 0 10px 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);\">" +
+               "<h2>📧 Vérification de votre email</h2>" +
+               "<p>Pour finaliser la création de votre compte, veuillez saisir ce code :</p>" +
+               "<div style=\"background: #f0fff0; border: 2px dashed #006400; border-radius: 8px; padding: 30px; text-align: center; margin: 30px 0;\">" +
+               "<div style=\"font-size: 36px; font-weight: bold; color: #006400; letter-spacing: 8px; font-family: monospace;\">" +
+               otpCode +
+               "</div>" +
+               "</div>" +
+               "<p><strong>⚠️ Ce code expire dans " + expiryText + "</strong></p>" +
+               "</div>" +
+               "</body>" +
+               "</html>";
+    }
+    
+    /**
+     * Template HTML pour l'email OTP login
      */
     private String buildOtpEmailTemplate(String otpCode) {
         return "<html>" +

@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import RegisterPage from './pages/auth/RegisterPage';
 import LoginPage from './pages/auth/LoginPage';
 import Dashboard from './components/dashboard/Dashboard';
+import OnboardingPage from './pages/onboarding/OnboardingPage';
 import './App.css';
 
 function App() {
-  const [currentPage, setCurrentPage] = useState('login'); // 'login', 'register', 'dashboard'
+  const [currentPage, setCurrentPage] = useState('login'); // 'login', 'register', 'dashboard', 'onboarding'
   const [user, setUser] = useState(null);
 
   const handleLoginSuccess = (userData) => {
@@ -20,10 +20,10 @@ function App() {
 
   const renderCurrentPage = () => {
     switch(currentPage) {
-      case 'register':
-        return <RegisterPage />;
       case 'dashboard':
         return <Dashboard user={user} onLogout={handleLogout} />;
+      case 'onboarding':
+        return <OnboardingPage />;
       default:
         return <LoginPage onLoginSuccess={handleLoginSuccess} />;
     }
@@ -40,10 +40,10 @@ function App() {
             Se connecter
           </button>
           <button 
-            onClick={() => setCurrentPage('register')}
-            className={currentPage === 'register' ? 'active' : ''}
+            onClick={() => setCurrentPage('onboarding')}
+            className={currentPage === 'onboarding' ? 'active' : ''}
           >
-            S'inscrire
+            Créer un compte
           </button>
         </div>
       )}

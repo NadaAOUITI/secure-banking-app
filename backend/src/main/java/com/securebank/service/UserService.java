@@ -1,6 +1,7 @@
 package com.securebank.service;
 
 import com.securebank.dto.UserRegistrationDto;
+import com.securebank.dto.UserDisplayDto;
 import com.securebank.exception.UserAlreadyExistsException;
 import com.securebank.exception.PasswordMismatchException;
 import com.securebank.model.User;
@@ -20,12 +21,18 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final AccountLockService accountLockService;
+    private final EncryptionService encryptionService;
+    private final BankAccountService bankAccountService;
     
     @Autowired
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, AccountLockService accountLockService) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, 
+                      AccountLockService accountLockService, EncryptionService encryptionService,
+                      BankAccountService bankAccountService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.accountLockService = accountLockService;
+        this.encryptionService = encryptionService;
+        this.bankAccountService = bankAccountService;
     }
     
     /**
@@ -53,11 +60,27 @@ public class UserService {
         user.setLastName(registrationDto.getLastName());
         
         // Chiffrer le mot de passe
-        String encodedPassword = passwordEncoder.encode(registrationDto.getPassword());
-        user.setPassword(encodedPassword);
+        user.setPassword(passwordEncoder.encode(registrationDto.getPassword()));
+        
+        // Chiffrer les données sensibles
+        user.setCountryEncrypted(encryptionService.encryptSensitiveData(registrationDto.getCountry()));
+        user.setPhoneEncrypted(encryptionService.encryptSensitiveData(registrationDto.getPhone()));
+        user.setBirthDateEncrypted(encryptionService.encryptSensitiveData(registrationDto.getBirthDate()));
+        
+        // Combiner adresse complète (adresse + ville + code postal)
+        String fullAddress = registrationDto.getAddress() + ", " + registrationDto.getCity() + " " + registrationDto.getPostalCode();
+        user.setAddressEncrypted(encryptionService.encryptSensitiveData(fullAddress));
+        
+        user.setDocumentTypeEncrypted(encryptionService.encryptSensitiveData(registrationDto.getDocumentType()));
+        user.setDocumentNumberEncrypted(encryptionService.encryptSensitiveData(registrationDto.getDocumentNumber()));
         
         // Sauvegarder l'utilisateur
-        return userRepository.save(user);
+        User savedUser = userRepository.save(user);
+        
+        // Créer le compte bancaire
+        createBankingProducts(savedUser, registrationDto);
+        
+        return savedUser;
     }
     
     /**
@@ -118,5 +141,47 @@ public class UserService {
      */
     public long getFailedAttemptsCount(String email) {
         return accountLockService.getFailedAttemptsCount(email);
+    }
+    
+    /**
+     * Crée les produits bancaires pour l'utilisateur
+     */
+    private void createBankingProducts(User user, UserRegistrationDto registrationDto) {
+        try {
+            // Créer le compte principal
+            java.math.BigDecimal initialDeposit = null;
+            if (registrationDto.getInitialDeposit() != null && !registrationDto.getInitialDeposit().isEmpty()) {
+                initialDeposit = new java.math.BigDecimal(registrationDto.getInitialDeposit());
+            }
+            
+            var account = bankAccountService.createAccount(user, registrationDto.getAccountType(), initialDeposit);
+            
+            // Créer les cartes sélectionnées avec leurs codes PIN
+            if (registrationDto.getSelectedCards() != null && registrationDto.getSelectedCards().length > 0) {
+                bankAccountService.createCards(account, registrationDto.getSelectedCards(), registrationDto.getCardPins());
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Erreur lors de la création des produits bancaires", e);
+        }
+    }
+    
+    /**
+     * Obtient les données utilisateur déchiffrées pour affichage sécurisé
+     */
+    public UserDisplayDto getUserDisplayData(String email) {
+        User user = findByEmail(email);
+        if (user == null) return null;
+        
+        UserDisplayDto dto = new UserDisplayDto();
+        dto.setEmail(user.getEmail());
+        dto.setFirstName(user.getFirstName());
+        dto.setLastName(user.getLastName());
+        
+        // Données masquées pour sécurité
+        dto.setPhoneMasked(encryptionService.maskPhoneForDisplay(
+            encryptionService.decryptSensitiveData(user.getPhoneEncrypted())));
+        dto.setEmailMasked(encryptionService.maskEmailForDisplay(user.getEmail()));
+        
+        return dto;
     }
 }

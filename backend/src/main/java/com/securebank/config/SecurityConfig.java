@@ -24,10 +24,17 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            .csrf(csrf -> csrf.disable()) // Désactivé pour l'API REST
+            .csrf(csrf -> csrf.disable())
+            .sessionManagement(session -> session
+                .maximumSessions(1)
+                .maxSessionsPreventsLogin(false)
+            )
             .authorizeHttpRequests(authz -> authz
-                .requestMatchers("/api/auth/**").permitAll() // Endpoints d'authentification publics
-                .anyRequest().authenticated() // Toutes les autres requêtes nécessitent une authentification
+                .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
+                .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/api/onboarding/**").permitAll()
+                .requestMatchers("/api/account/**").authenticated()
+                .anyRequest().authenticated()
             );
         
         return http.build();

@@ -14,8 +14,8 @@ public class OtpToken {
     @Column(nullable = false)
     private String email;
     
-    @Column(nullable = false)
-    private String otpCode;
+    @Column(name = "otp_code", nullable = false)
+    private String otpCodeHash;
     
     @Column(nullable = false)
     private LocalDateTime createdAt;
@@ -32,10 +32,17 @@ public class OtpToken {
         this.expiresAt = LocalDateTime.now().plusMinutes(5); // 5 minutes expiry
     }
     
-    public OtpToken(String email, String otpCode) {
+    public OtpToken(String email, String otpCodeHash) {
         this();
         this.email = email;
-        this.otpCode = otpCode;
+        this.otpCodeHash = otpCodeHash;
+    }
+    
+    public OtpToken(String email, String otpCodeHash, int expiryMinutes) {
+        this.createdAt = LocalDateTime.now();
+        this.expiresAt = LocalDateTime.now().plusMinutes(expiryMinutes);
+        this.email = email;
+        this.otpCodeHash = otpCodeHash;
     }
     
     // Helper methods
@@ -54,8 +61,8 @@ public class OtpToken {
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
     
-    public String getOtpCode() { return otpCode; }
-    public void setOtpCode(String otpCode) { this.otpCode = otpCode; }
+    public String getOtpCodeHash() { return otpCodeHash; }
+    public void setOtpCodeHash(String otpCodeHash) { this.otpCodeHash = otpCodeHash; }
     
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

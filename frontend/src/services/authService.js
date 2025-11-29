@@ -52,6 +52,7 @@ class AuthService {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify(loginData),
       });
 
@@ -77,6 +78,7 @@ class AuthService {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify(otpData),
       });
 
