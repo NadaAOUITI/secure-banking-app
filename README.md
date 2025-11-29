@@ -84,7 +84,7 @@ cd C:\chemin\vers\secure-banking-app\backend\src\main\resources
 ### Étape 2 : Créer le Keystore
 
 ```powershell
-keytool -genkeypair -alias securebank -keyalg RSA -keysize 2048 -storetype PKCS12 -keystore securebank. p12 -validity 3650 -storepass securebank -dname "CN=localhost, OU=dev, O=secureBank, L=Paris, S=IDF, C=FR"
+keytool -genkeypair -alias securebank -keyalg RSA -keysize 2048 -storetype PKCS12 -keystore securebank.p12 -validity 3650 -storepass securebank -dname "CN=localhost,OU=dev,O=secureBank,L=Paris,S=IDF,C=FR"
 ```
 
 ---
@@ -92,7 +92,7 @@ keytool -genkeypair -alias securebank -keyalg RSA -keysize 2048 -storetype PKCS1
 ### Étape 3 : Vérifier la Création
 
 ```powershell
-keytool -list -keystore securebank. p12 -storepass securebank
+keytool -list -keystore securebank.p12 -storepass securebank
 ```
 
 **Résultat attendu :**
@@ -130,8 +130,7 @@ Pour supprimer l'avertissement du navigateur :
 
 **5.1 - Exporter le certificat :**
 ```powershell
-keytool -exportcert -alias securebank -keystore securebank.p12 -file securebank.crt -storepass securebank
-```
+keytool -exportcert -alias securebank -keystore securebank.p12 -file securebank.crt -storepass securebank```
 
 **5.2 - Ouvrir PowerShell en Administrateur et importer :**
 ```powershell
