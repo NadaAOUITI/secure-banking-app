@@ -256,6 +256,39 @@
     opacity: 0.8;
 }
 
+/* Loading and Error States */
+.loading, .error {
+    text-align: center;
+    padding: 2rem;
+    color: #666;
+    font-style: italic;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.error {
+    color: #e74c3c;
+    border-left: 4px solid #e74c3c;
+}
+
+.refresh-btn {
+    background: #3498db;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 1rem;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+}
+
+.refresh-btn:hover {
+    background: #2980b9;
+    transform: translateY(-1px);
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .dashboard-header {

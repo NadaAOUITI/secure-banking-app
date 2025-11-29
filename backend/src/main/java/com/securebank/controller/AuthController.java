@@ -70,10 +70,10 @@ public class AuthController {
                 return ResponseEntity.badRequest().body(response);
             }
             
-            // Enregistrer l'utilisateur
+            // Enregistrer l'utilisateur avec toutes les données
             User user = userService.registerUser(registrationDto);
             
-            // Réponse de succès (sans exposer le mot de passe)
+            // Réponse de succès (sans exposer les données sensibles)
             Map<String, Object> userData = new HashMap<>();
             userData.put("id", user.getId());
             userData.put("email", user.getEmail());
@@ -82,7 +82,7 @@ public class AuthController {
             userData.put("createdAt", user.getCreatedAt());
             
             response.put("success", true);
-            response.put("message", "Inscription réussie");
+            response.put("message", "Compte créé avec succès. Produits bancaires configurés.");
             response.put("user", userData);
             
             return ResponseEntity.status(HttpStatus.CREATED).body(response);

@@ -1,12 +1,42 @@
-import React, { useState } from 'react';
-import RegisterPage from './pages/auth/RegisterPage';
+import React, { useState, useEffect } from 'react';
 import LoginPage from './pages/auth/LoginPage';
 import Dashboard from './components/dashboard/Dashboard';
+import ModernDashboard from './components/modern-dashboard/ModernDashboard';
+import OnboardingPage from './pages/onboarding/OnboardingPage';
 import './App.css';
 
 function App() {
-  const [currentPage, setCurrentPage] = useState('login'); // 'login', 'register', 'dashboard'
+  const [currentPage, setCurrentPage] = useState('login'); // 'login', 'register', 'dashboard', 'onboarding'
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  // Vérifier si l'utilisateur est déjà connecté au démarrage
+  useEffect(() => {
+    checkExistingSession();
+  }, []);
+
+  const checkExistingSession = async () => {
+    try {
+      const response = await fetch('http://localhost:8080/api/account/details', {
+        method: 'GET',
+        credentials: 'include'
+      });
+
+      if (response.ok) {
+        const accountData = await response.json();
+        setUser({ 
+          firstName: accountData.firstName, 
+          lastName: accountData.lastName,
+          email: accountData.email 
+        });
+        setCurrentPage('dashboard');
+      }
+    } catch (error) {
+      console.log('Aucune session active');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleLoginSuccess = (userData) => {
     setUser(userData);
@@ -20,14 +50,18 @@ function App() {
 
   const renderCurrentPage = () => {
     switch(currentPage) {
-      case 'register':
-        return <RegisterPage />;
       case 'dashboard':
-        return <Dashboard user={user} onLogout={handleLogout} />;
+        return <ModernDashboard user={user} onLogout={handleLogout} />;
+      case 'onboarding':
+        return <OnboardingPage />;
       default:
         return <LoginPage onLoginSuccess={handleLoginSuccess} />;
     }
   };
+
+  if (loading) {
+    return <div className="loading">Chargement...</div>;
+  }
 
   return (
     <div className="App">
@@ -40,10 +74,10 @@ function App() {
             Se connecter
           </button>
           <button 
-            onClick={() => setCurrentPage('register')}
-            className={currentPage === 'register' ? 'active' : ''}
+            onClick={() => setCurrentPage('onboarding')}
+            className={currentPage === 'onboarding' ? 'active' : ''}
           >
-            S'inscrire
+            Créer un compte
           </button>
         </div>
       )}

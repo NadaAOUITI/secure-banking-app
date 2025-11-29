@@ -8,16 +8,16 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
+import java.util.List;
 
 @Repository
 public interface OtpTokenRepository extends JpaRepository<OtpToken, Long> {
     
     /**
-     * Trouve un token OTP valide par email et code
+     * Trouve tous les tokens OTP valides par email (pour vérification avec hash)
      */
-    @Query("SELECT o FROM OtpToken o WHERE o.email = ?1 AND o.otpCode = ?2 AND o.used = false AND o.expiresAt > ?3")
-    Optional<OtpToken> findValidOtpToken(String email, String otpCode, LocalDateTime now);
+    @Query("SELECT o FROM OtpToken o WHERE o.email = ?1 AND o.used = false AND o.expiresAt > ?2")
+    List<OtpToken> findValidOtpTokensByEmail(String email, LocalDateTime now);
     
     /**
      * Supprime tous les tokens expirés

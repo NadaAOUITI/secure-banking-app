@@ -56,6 +56,25 @@ public class User implements UserDetails {
     @Column
     private LocalDateTime lastLoginAt;
     
+    // Encrypted sensitive fields
+    @Column(name = "country_encrypted")
+    private String countryEncrypted;
+    
+    @Column(name = "phone_encrypted")
+    private String phoneEncrypted;
+    
+    @Column(name = "birth_date_encrypted")
+    private String birthDateEncrypted;
+    
+    @Column(name = "address_encrypted")
+    private String addressEncrypted;
+    
+    @Column(name = "document_type_encrypted")
+    private String documentTypeEncrypted;
+    
+    @Column(name = "document_number_encrypted")
+    private String documentNumberEncrypted;
+    
     // Constructors
     public User() {
         this.createdAt = LocalDateTime.now();
@@ -126,4 +145,23 @@ public class User implements UserDetails {
     public void setAccountNonExpired(boolean accountNonExpired) { this.accountNonExpired = accountNonExpired; }
     public void setAccountNonLocked(boolean accountNonLocked) { this.accountNonLocked = accountNonLocked; }
     public void setCredentialsNonExpired(boolean credentialsNonExpired) { this.credentialsNonExpired = credentialsNonExpired; }
+    
+    // Encrypted fields getters/setters
+    public String getCountryEncrypted() { return countryEncrypted; }
+    public void setCountryEncrypted(String countryEncrypted) { this.countryEncrypted = countryEncrypted; }
+    
+    public String getPhoneEncrypted() { return phoneEncrypted; }
+    public void setPhoneEncrypted(String phoneEncrypted) { this.phoneEncrypted = phoneEncrypted; }
+    
+    public String getBirthDateEncrypted() { return birthDateEncrypted; }
+    public void setBirthDateEncrypted(String birthDateEncrypted) { this.birthDateEncrypted = birthDateEncrypted; }
+    
+    public String getAddressEncrypted() { return addressEncrypted; }
+    public void setAddressEncrypted(String addressEncrypted) { this.addressEncrypted = addressEncrypted; }
+    
+    public String getDocumentTypeEncrypted() { return documentTypeEncrypted; }
+    public void setDocumentTypeEncrypted(String documentTypeEncrypted) { this.documentTypeEncrypted = documentTypeEncrypted; }
+    
+    public String getDocumentNumberEncrypted() { return documentNumberEncrypted; }
+    public void setDocumentNumberEncrypted(String documentNumberEncrypted) { this.documentNumberEncrypted = documentNumberEncrypted; }
 }

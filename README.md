@@ -43,17 +43,26 @@ secure-banking-app/
 - ✅ **Implement user registration with strong password validation**
 - ✅ **Implement login with multi-factor authentication (OTP via email)**
 - ✅ **Securely store passwords (hashing with salt, e.g., bcrypt)**
+- ✅ **Implement session management (timeout after inactivity)**
+- ✅ **Log failed login attempts and lock account after repeated failures**
 
-#### 2. Database Setup
+#### 2. Account Management
+- ✅ **View account details (balance, account number, personal info)**
+- ✅ **Add new bank accounts with card selection**
+- ✅ **Multiple account management and display**
+- ✅ **Secure account creation with validation**
+
+#### 3. Database Setup
 - ✅ **PostgreSQL database configuration and connection**
 
 ### 🔄 **Tâches En Cours**
 
-#### 1. User Authentication & Session Management
-- [ ] **Implement session management (timeout after inactivity)**
-- [ ] **Log failed login attempts and lock account after repeated failures**
+#### 2. Account Management
+- ✅ **Update personal info (phone number, email)**
+- ✅ **Change password securely**
+- ✅ **Ensure data validation to prevent injection attacks**
 
-#### 2. Security & Encryption
+#### 3. Security & Encryption
 - [ ] **Implement TLS/SSL encryption for all client-server communication**
       Generate a Keystore
 
@@ -173,13 +182,7 @@ Accéder à : **https://localhost:8443**
 
 ### 📋 **Tâches Restantes**
 
-#### 2. Account Management
-- [ ] View account details (balance, account number, personal info)
-- [ ] Update personal info (phone number, email)
-- [ ] Change password securely
-- [ ] Ensure data validation to prevent injection attacks
-
-#### 3. Beneficiary Management
+#### 4. Beneficiary Management
 - [ ] Add a beneficiary (same bank, national bank, international bank)
 - [ ] Edit or remove beneficiary details
 - [ ] Validate beneficiary account numbers before adding
@@ -220,6 +223,9 @@ Accéder à : **https://localhost:8443**
 - **MFA/2FA**: Authentification à deux facteurs avec OTP email
 - **Password Policy**: Mots de passe forts (12+ caractères, complexité)
 - **BCrypt Hashing**: Chiffrement des mots de passe (coût 12)
+- **Session Management**: Timeout automatique 15 minutes, cookies sécurisés
+- **Account Locking**: Verrouillage après 5 tentatives échouées (30 min)
+- **Security Alerts**: Notifications email automatiques de sécurité
 - **Input Validation**: Sanitisation côté client et serveur
 - **TLS/SSL**: Communications chiffrées obligatoires
 - **DTO Protection**: Isolation des données sensibles
