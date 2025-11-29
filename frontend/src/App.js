@@ -3,10 +3,11 @@ import LoginPage from './pages/auth/LoginPage';
 import Dashboard from './components/dashboard/Dashboard';
 import ModernDashboard from './components/modern-dashboard/ModernDashboard';
 import OnboardingPage from './pages/onboarding/OnboardingPage';
+import BeneficiaryManagement from './components/dashboard/BeneficiaryManagement';
 import './App.css';
 
 function App() {
-  const [currentPage, setCurrentPage] = useState('login'); // 'login', 'register', 'dashboard', 'onboarding'
+  const [currentPage, setCurrentPage] = useState('login');
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -22,12 +23,12 @@ function App() {
         credentials: 'include'
       });
 
-      if (response.ok) {
+      if (response. ok) {
         const accountData = await response.json();
-        setUser({ 
-          firstName: accountData.firstName, 
+        setUser({
+          firstName: accountData.firstName,
           lastName: accountData.lastName,
-          email: accountData.email 
+          email: accountData.email
         });
         setCurrentPage('dashboard');
       }
@@ -48,10 +49,27 @@ function App() {
     setCurrentPage('login');
   };
 
+  // Navigation vers bénéficiaires
+  const handleNavigateToBeneficiaries = () => {
+    setCurrentPage('beneficiaries');
+  };
+
   const renderCurrentPage = () => {
     switch(currentPage) {
       case 'dashboard':
-        return <ModernDashboard user={user} onLogout={handleLogout} />;
+        return (
+            <ModernDashboard
+                user={user}
+                onLogout={handleLogout}
+                onNavigateToBeneficiaries={handleNavigateToBeneficiaries}
+            />
+        );
+      case 'beneficiaries':
+        return (
+            <BeneficiaryManagement
+                onClose={() => setCurrentPage('dashboard')}
+            />
+        );
       case 'onboarding':
         return <OnboardingPage />;
       default:
@@ -64,26 +82,26 @@ function App() {
   }
 
   return (
-    <div className="App">
-      {currentPage !== 'dashboard' && (
-        <div className="auth-toggle">
-          <button 
-            onClick={() => setCurrentPage('login')}
-            className={currentPage === 'login' ? 'active' : ''}
-          >
-            Se connecter
-          </button>
-          <button 
-            onClick={() => setCurrentPage('onboarding')}
-            className={currentPage === 'onboarding' ? 'active' : ''}
-          >
-            Créer un compte
-          </button>
-        </div>
-      )}
-      
-      {renderCurrentPage()}
-    </div>
+      <div className="App">
+        {currentPage !== 'dashboard' && currentPage !== 'beneficiaries' && (
+            <div className="auth-toggle">
+              <button
+                  onClick={() => setCurrentPage('login')}
+                  className={currentPage === 'login' ? 'active' : ''}
+              >
+                Se connecter
+              </button>
+              <button
+                  onClick={() => setCurrentPage('onboarding')}
+                  className={currentPage === 'onboarding' ? 'active' : ''}
+              >
+                Créer un compte
+              </button>
+            </div>
+        )}
+
+        {renderCurrentPage()}
+      </div>
   );
 }
 
