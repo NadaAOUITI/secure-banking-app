@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import LoginPage from './pages/auth/LoginPage';
 import Dashboard from './components/dashboard/Dashboard';
 import OnboardingPage from './pages/onboarding/OnboardingPage';
@@ -7,6 +7,35 @@ import './App.css';
 function App() {
   const [currentPage, setCurrentPage] = useState('login'); // 'login', 'register', 'dashboard', 'onboarding'
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  // Vérifier si l'utilisateur est déjà connecté au démarrage
+  useEffect(() => {
+    checkExistingSession();
+  }, []);
+
+  const checkExistingSession = async () => {
+    try {
+      const response = await fetch('http://localhost:8080/api/account/details', {
+        method: 'GET',
+        credentials: 'include'
+      });
+
+      if (response.ok) {
+        const accountData = await response.json();
+        setUser({ 
+          firstName: accountData.firstName, 
+          lastName: accountData.lastName,
+          email: accountData.email 
+        });
+        setCurrentPage('dashboard');
+      }
+    } catch (error) {
+      console.log('Aucune session active');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleLoginSuccess = (userData) => {
     setUser(userData);
@@ -28,6 +57,10 @@ function App() {
         return <LoginPage onLoginSuccess={handleLoginSuccess} />;
     }
   };
+
+  if (loading) {
+    return <div className="loading">Chargement...</div>;
+  }
 
   return (
     <div className="App">

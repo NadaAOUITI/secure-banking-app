@@ -38,8 +38,7 @@ public class SessionService {
         SecurityContextHolder.getContext().setAuthentication(authToken);
         
         // Sauvegarder le SecurityContext dans la session
-        session.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, 
-                           SecurityContextHolder.getContext());
+        session.setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
         
         System.out.println("✅ Session créée pour: " + userEmail + " (ID: " + session.getId() + ")");
     }
