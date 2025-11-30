@@ -203,4 +203,29 @@ public class EmailService {
     public boolean isValidEmail(String email) {
         return email != null && email.matches("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$");
     }
+
+    /**
+     * Envoie un email HTML
+     * @param to adresse email du destinataire
+     * @param subject sujet de l'email
+     * @param htmlContent contenu HTML de l'email
+     */
+    public void sendHtmlEmail(String to, String subject, String htmlContent) {
+        try {
+            MimeMessage mimeMessage = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+
+            helper.setFrom(fromEmail);
+            helper.setTo(to);
+            helper.setSubject(subject);
+            helper.setText(htmlContent, true); // true = isHtml
+
+            mailSender. send(mimeMessage);
+            System.out.println("✅ Email HTML envoyé à: " + to);
+
+        } catch (Exception e) {
+            System.err.println("❌ Erreur envoi email HTML: " + e. getMessage());
+            throw new RuntimeException("Erreur lors de l'envoi de l'email", e);
+        }
+    }
 }

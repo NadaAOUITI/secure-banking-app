@@ -1,62 +1,68 @@
-"use client"
+import React, { useState } from "react";
+import TabNavigation from "./components/TabNavigation";
+import AccountsView from "./components/AccountsView";
+import CardsView from "./components/CardsView";
+import RequestsView from "./components/RequestsView";
+import ProfileView from "./components/ProfileView";
+import BeneficiaryManagement from "../dashboard/BeneficiaryManagement";
+import TransferManagement from "../dashboard/TransferManagement";
+import "./ModernDashboard.css";
 
-import { useState } from "react"
-import TabNavigation from "./components/TabNavigation"
-import AccountsView from "./components/AccountsView"
-import CardsView from "./components/CardsView"
-import RequestsView from "./components/RequestsView"
-import ProfileView from "./components/ProfileView"
-import BeneficiaryManagement from "../dashboard/BeneficiaryManagement"
-import "./ModernDashboard.css"
-
-const ModernDashboard = ({ user, onLogout, onNavigateToBeneficiaries }) => {
-  const [activeTab, setActiveTab] = useState("accounts")
-  const [showBeneficiaries, setShowBeneficiaries] = useState(false)
-  const [notification, setNotification] = useState(null)
+const ModernDashboard = ({ user, accounts = [], onLogout, onNavigateToBeneficiaries, onNavigateToTransfers }) => {
+  const [activeTab, setActiveTab] = useState("accounts");
+  const [activeView, setActiveView] = useState("dashboard"); // 'dashboard', 'beneficiaries', 'transfers'
+  const [notification, setNotification] = useState(null);
 
   const showNotification = (message, type = "success", duration = 3000) => {
-    setNotification({ message, type })
-    setTimeout(() => setNotification(null), duration)
-  }
+    setNotification({ message, type });
+    setTimeout(() => setNotification(null), duration);
+  };
 
   // Si on affiche les bénéficiaires
-  if (showBeneficiaries) {
-    return <BeneficiaryManagement onClose={() => setShowBeneficiaries(false)} />
+  if (activeView === "beneficiaries") {
+    return <BeneficiaryManagement onClose={() => setActiveView("dashboard")} />;
+  }
+
+  // Si on affiche les virements
+  if (activeView === "transfers") {
+    return (
+        <TransferManagement
+            onClose={() => setActiveView("dashboard")}
+            accounts={accounts}
+        />
+    );
   }
 
   const renderActiveView = () => {
     switch (activeTab) {
       case "accounts":
-        return <AccountsView user={user} onManageBeneficiaries={() => setShowBeneficiaries(true)} />
+        return (
+            <AccountsView
+                user={user}
+                onManageBeneficiaries={() => setActiveView("beneficiaries")}
+                onMakeTransfer={() => setActiveView("transfers")}
+            />
+        );
       case "cards":
-        return <CardsView user={user} />
+        return <CardsView user={user} />;
       case "requests":
-        return <RequestsView user={user} />
+        return <RequestsView user={user} />;
       case "profile":
-        return <ProfileView user={user} />
+        return <ProfileView user={user} />;
       default:
-        return <AccountsView user={user} onManageBeneficiaries={() => setShowBeneficiaries(true)} />
+        return (
+            <AccountsView
+                user={user}
+                onManageBeneficiaries={() => setActiveView("beneficiaries")}
+                onMakeTransfer={() => setActiveView("transfers")}
+            />
+        );
     }
-  }
-
-  const handleQuickAction = (actionType) => {
-    switch (actionType) {
-      case "transfer":
-        showNotification("Fonctionnalité de virement en cours de développement", "info")
-        break
-      case "history":
-        showNotification("Historique chargé", "success")
-        break
-      case "settings":
-        showNotification("Paramètres en cours de développement", "info")
-        break
-      default:
-        break
-    }
-  }
+  };
 
   return (
       <div className="modern-dashboard">
+        {/* Header */}
         <header className="dashboard-header">
           <div className="header-left">
             <button className="menu-btn" title="Menu">
@@ -74,43 +80,53 @@ const ModernDashboard = ({ user, onLogout, onNavigateToBeneficiaries }) => {
           </div>
         </header>
 
+        {/* Tab Navigation */}
         <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
 
+        {/* Main Content */}
         <main className="dashboard-content">{renderActiveView()}</main>
 
+        {/* Quick Actions */}
         <section className="quick-actions-section">
-          <h3>Actions Rapides</h3>
+          <h3>🚀 Actions Rapides</h3>
           <div className="quick-actions-grid">
+            {/* Virement */}
             <button
                 className="quick-action-btn transfer"
-                onClick={() => handleQuickAction("transfer")}
+                onClick={() => setActiveView("transfers")}
                 title="Effectuer un virement"
             >
               <span className="action-icon">💸</span>
               <span className="action-text">Virement</span>
             </button>
 
+            {/* Bénéficiaires */}
             <button
                 className="quick-action-btn beneficiary"
-                onClick={() => setShowBeneficiaries(true)}
+                onClick={() => setActiveView("beneficiaries")}
                 title="Gérer les bénéficiaires"
             >
               <span className="action-icon">👥</span>
               <span className="action-text">Bénéficiaires</span>
             </button>
 
+            {/* Historique */}
             <button
                 className="quick-action-btn history"
-                onClick={() => handleQuickAction("history")}
+                onClick={() => {
+                  setActiveView("transfers");
+                  // L'historique sera affiché dans TransferManagement
+                }}
                 title="Consulter l'historique"
             >
               <span className="action-icon">📊</span>
               <span className="action-text">Historique</span>
             </button>
 
+            {/* Paramètres */}
             <button
                 className="quick-action-btn settings"
-                onClick={() => handleQuickAction("settings")}
+                onClick={() => setActiveTab("profile")}
                 title="Accéder aux paramètres"
             >
               <span className="action-icon">⚙️</span>
@@ -119,9 +135,14 @@ const ModernDashboard = ({ user, onLogout, onNavigateToBeneficiaries }) => {
           </div>
         </section>
 
-        {notification && <div className={`notification notification-${notification.type}`}>{notification.message}</div>}
+        {/* Notification Toast */}
+        {notification && (
+            <div className={`notification notification-${notification.type}`}>
+              {notification. message}
+            </div>
+        )}
       </div>
-  )
-}
+  );
+};
 
-export default ModernDashboard
+export default ModernDashboard;
