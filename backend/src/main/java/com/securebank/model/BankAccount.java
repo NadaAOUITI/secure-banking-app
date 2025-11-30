@@ -3,6 +3,8 @@ package com.securebank.model;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.ArrayList;
 
 @Entity
 @Table(name = "bank_accounts")
@@ -34,6 +36,9 @@ public class BankAccount {
     
     @Column(name = "is_active")
     private boolean isActive = true;
+    
+    @OneToMany(mappedBy = "account", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<BankCard> cards = new ArrayList<>();
     
     public enum AccountType {
         CURRENT("Compte Courant"),
@@ -87,4 +92,7 @@ public class BankAccount {
     
     public boolean isActive() { return isActive; }
     public void setActive(boolean active) { isActive = active; }
+    
+    public List<BankCard> getCards() { return cards; }
+    public void setCards(List<BankCard> cards) { this.cards = cards; }
 }

@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import TabNavigation from './components/TabNavigation';
 import AccountsView from './components/AccountsView';
 import CardsView from './components/CardsView';
-import RequestsView from './components/RequestsView';
 import ProfileView from './components/ProfileView';
 import './ModernDashboard.css';
 
@@ -15,8 +14,6 @@ const ModernDashboard = ({ user, onLogout }) => {
         return <AccountsView user={user} />;
       case 'cards':
         return <CardsView user={user} />;
-      case 'requests':
-        return <RequestsView user={user} />;
       case 'profile':
         return <ProfileView user={user} />;
       default:

@@ -23,16 +23,18 @@ public class UserService {
     private final AccountLockService accountLockService;
     private final EncryptionService encryptionService;
     private final BankAccountService bankAccountService;
+    private final SecureDataMaskingService maskingService;
     
     @Autowired
     public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, 
                       AccountLockService accountLockService, EncryptionService encryptionService,
-                      BankAccountService bankAccountService) {
+                      BankAccountService bankAccountService, SecureDataMaskingService maskingService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.accountLockService = accountLockService;
         this.encryptionService = encryptionService;
         this.bankAccountService = bankAccountService;
+        this.maskingService = maskingService;
     }
     
     /**
@@ -178,9 +180,8 @@ public class UserService {
         dto.setLastName(user.getLastName());
         
         // Données masquées pour sécurité
-        dto.setPhoneMasked(encryptionService.maskPhoneForDisplay(
-            encryptionService.decryptSensitiveData(user.getPhoneEncrypted())));
-        dto.setEmailMasked(encryptionService.maskEmailForDisplay(user.getEmail()));
+        dto.setPhoneMasked(maskingService.maskPhone(user.getPhoneEncrypted()));
+        dto.setEmailMasked(maskingService.maskEmail(user.getEmail()));
         
         return dto;
     }
