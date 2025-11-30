@@ -56,6 +56,11 @@ secure-banking-app/
 #### 3. Database Setup
 - ✅ **PostgreSQL database configuration and connection**
 
+- #### 4. Beneficiary Management
+- ✅ Add a beneficiary (same bank, national bank, international bank)
+- ✅ Edit or remove beneficiary details
+- ✅ Validate beneficiary account numbers before adding
+
 ### 🔄 **Tâches En Cours**
 
 #### 2. Account Management
@@ -65,6 +70,11 @@ secure-banking-app/
 - ✅ **Advanced card security with anti-replay protection**
 - ✅ **Rate limiting and brute force protection**
 - ✅ **PIN strength validation and weak PIN detection**
+#### 4. Fund Transfers
+- [ ] Implement transfer to a beneficiary with OTP confirmation
+- [ ] Implement transfer history logging
+- [ ] Send confirmation email for every transfer
+- [ ] Validate input to prevent SQL/command injection
 
 #### 3. Security & Encryption
 - [ ] **Implement TLS/SSL encryption for all client-server communication**
@@ -72,17 +82,6 @@ secure-banking-app/
 - [ ] **Implement input validation and sanitization to prevent injection attacks**
 
 ### 📋 **Tâches Restantes**
-
-#### 4. Beneficiary Management
-- [ ] Add a beneficiary (same bank, national bank, international bank)
-- [ ] Edit or remove beneficiary details
-- [ ] Validate beneficiary account numbers before adding
-
-#### 4. Fund Transfers
-- [ ] Implement transfer to a beneficiary with OTP confirmation
-- [ ] Implement transfer history logging
-- [ ] Send confirmation email for every transfer
-- [ ] Validate input to prevent SQL/command injection
 
 #### 5. Transaction History
 - [ ] Retrieve transaction history from a secure database
