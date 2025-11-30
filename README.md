@@ -55,6 +55,12 @@ secure-banking-app/
 
 #### 3. Database Setup
 - ✅ **PostgreSQL database configuration and connection**
+
+#### 3. Security & Encryption
+- ✅ **Implement TLS/SSL encryption for all client-server communication**
+- ✅ **Use a secure backend framework (Spring Boot + Spring Security)**
+- ✅ **Implement input validation and sanitization to prevent injection attacks**
+
 #### 4. Beneficiary Management
 - ✅ Add a beneficiary (same bank, national bank, international bank)
 - ✅ Edit or remove beneficiary details
@@ -74,11 +80,6 @@ secure-banking-app/
 - [ ] Implement transfer history logging
 - [ ] Send confirmation email for every transfer
 - [ ] Validate input to prevent SQL/command injection
-
-#### 3. Security & Encryption
-- ✅ **Implement TLS/SSL encryption for all client-server communication**
-- ✅ **Use a secure backend framework (Spring Boot + Spring Security)**
-- ✅ **Implement input validation and sanitization to prevent injection attacks**
 
 ### 📋 **Tâches Restantes**
 
