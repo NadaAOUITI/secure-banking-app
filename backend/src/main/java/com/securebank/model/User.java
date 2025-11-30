@@ -56,6 +56,18 @@ public class User implements UserDetails {
     @Column
     private LocalDateTime lastLoginAt;
     
+    @Column
+    private LocalDateTime passwordChangedAt;
+    
+    @Column(name = "pending_email_encrypted")
+    private String pendingEmailEncrypted;
+    
+    @Column(name = "email_confirmation_token")
+    private String emailConfirmationToken;
+    
+    @Column(name = "email_confirmation_expires_at")
+    private LocalDateTime emailConfirmationExpiresAt;
+    
     // Encrypted sensitive fields
     @Column(name = "country_encrypted")
     private String countryEncrypted;
@@ -164,4 +176,16 @@ public class User implements UserDetails {
     
     public String getDocumentNumberEncrypted() { return documentNumberEncrypted; }
     public void setDocumentNumberEncrypted(String documentNumberEncrypted) { this.documentNumberEncrypted = documentNumberEncrypted; }
+    
+    public LocalDateTime getPasswordChangedAt() { return passwordChangedAt; }
+    public void setPasswordChangedAt(LocalDateTime passwordChangedAt) { this.passwordChangedAt = passwordChangedAt; }
+    
+    public String getPendingEmailEncrypted() { return pendingEmailEncrypted; }
+    public void setPendingEmailEncrypted(String pendingEmailEncrypted) { this.pendingEmailEncrypted = pendingEmailEncrypted; }
+    
+    public String getEmailConfirmationToken() { return emailConfirmationToken; }
+    public void setEmailConfirmationToken(String emailConfirmationToken) { this.emailConfirmationToken = emailConfirmationToken; }
+    
+    public LocalDateTime getEmailConfirmationExpiresAt() { return emailConfirmationExpiresAt; }
+    public void setEmailConfirmationExpiresAt(LocalDateTime emailConfirmationExpiresAt) { this.emailConfirmationExpiresAt = emailConfirmationExpiresAt; }
 }

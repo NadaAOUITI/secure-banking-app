@@ -65,4 +65,25 @@ public class SecurityAuditService {
         if (localPart.length() <= 2) return email;
         return localPart.charAt(0) + "***" + localPart.charAt(localPart.length() - 1) + "@" + parts[1];
     }
+
+    public void logProfileUpdateInitiation(String userEmail, String ipAddress) {
+        System.out.println(String.format(
+            "[SECURITY AUDIT] [INFO] Profile Update Initiated - User: %s, IP: %s, Timestamp: %s",
+            maskEmail(userEmail), ipAddress, LocalDateTime.now()
+        ));
+    }
+
+    public void logProfileUpdateSuccess(String userEmail, String updateType, String ipAddress) {
+        System.out.println(String.format(
+            "[SECURITY AUDIT] [INFO] Profile Update Success - User: %s, Type: %s, IP: %s, Timestamp: %s",
+            maskEmail(userEmail), updateType, ipAddress, LocalDateTime.now()
+        ));
+    }
+
+    public void logProfileUpdateFailure(String userEmail, String updateType, String ipAddress, String reason) {
+        System.out.println(String.format(
+            "[SECURITY ALERT] [WARNING] Profile Update Failed - User: %s, Type: %s, Reason: %s, IP: %s, Timestamp: %s",
+            maskEmail(userEmail), updateType, reason, ipAddress, LocalDateTime.now()
+        ));
+    }
 }

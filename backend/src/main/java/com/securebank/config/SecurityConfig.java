@@ -39,6 +39,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/onboarding/**").permitAll()
                 .requestMatchers("/api/account/**").authenticated()
                 .requestMatchers("/api/accounts/**").authenticated()
+                .requestMatchers("/api/profile/**").authenticated()
                 .anyRequest().authenticated()
             );
         
