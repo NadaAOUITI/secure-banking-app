@@ -55,8 +55,7 @@ secure-banking-app/
 
 #### 3. Database Setup
 - ✅ **PostgreSQL database configuration and connection**
-
-- #### 4. Beneficiary Management
+#### 4. Beneficiary Management
 - ✅ Add a beneficiary (same bank, national bank, international bank)
 - ✅ Edit or remove beneficiary details
 - ✅ Validate beneficiary account numbers before adding
