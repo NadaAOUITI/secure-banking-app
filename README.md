@@ -66,20 +66,19 @@ secure-banking-app/
 - ✅ Edit or remove beneficiary details
 - ✅ Validate beneficiary account numbers before adding
 
+#### 6. Security Testing
+- ✅ **Perform penetration test for SQL injection / XSS**
+- ✅ **Authentication bypass attempt**
+- ✅ **Session hijacking simulation**
+- ✅ **Document results and mitigation measures**
+
 ### 🔄 **Tâches En Cours**
 
-#### 2. Account Management
-- ✅ **Update personal info (phone number, email)**
-- ✅ **Change password securely**
-- ✅ **Ensure data validation to prevent injection attacks**
-- ✅ **Advanced card security with anti-replay protection**
-- ✅ **Rate limiting and brute force protection**
-- ✅ **PIN strength validation and weak PIN detection**
 #### 4. Fund Transfers
 - [ ] Implement transfer to a beneficiary with OTP confirmation
 - [ ] Implement transfer history logging
 - [ ] Send confirmation email for every transfer
-- [ ] Validate input to prevent SQL/command injection
+- ✅ **Validate input to prevent SQL/command injection** *(Déjà implémenté globalement : ValidationInterceptor + InputSanitizer + ValidationService + JPA/Hibernate requêtes paramétrées)*
 
 ### 📋 **Tâches Restantes**
 
@@ -88,15 +87,9 @@ secure-banking-app/
 - [ ] Filter transactions by date, amount, or beneficiary
 - [ ] Display securely on the app interface without exposing sensitive info
 
-#### 6. Security Testing
-- ? **Perform penetration test for SQL injection / XSS**
-- ? **Authentication bypass attempt**
-- ? **Session hijacking simulation**
-- ? **Document results and mitigation measures**
-
 #### 7. Optional / Bonus Features
 - [ ] Admin panel to monitor user activity and security alerts
-- [ ] Additional input validation, e.g., regex for account numbers
+- ✅ **Additional input validation, e.g., regex for account numbers**
 - [ ] Implement logging for all critical operations for auditing
 
 ### 🎯 **Prochaines Étapes Recommandées**
