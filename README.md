@@ -89,10 +89,10 @@ secure-banking-app/
 - [ ] Display securely on the app interface without exposing sensitive info
 
 #### 6. Security Testing
-- [ ] Perform penetration test for SQL injection / XSS
-- [ ] Authentication bypass attempt
-- [ ] Session hijacking simulation
-- [ ] Document results and mitigation measures
+- ? **Perform penetration test for SQL injection / XSS**
+- ? **Authentication bypass attempt**
+- ? **Session hijacking simulation**
+- ? **Document results and mitigation measures**
 
 #### 7. Optional / Bonus Features
 - [ ] Admin panel to monitor user activity and security alerts
