@@ -51,9 +51,14 @@ secure-banking-app/
 - ✅ **Add new bank accounts with card selection**
 - ✅ **Multiple account management and display**
 - ✅ **Secure account creation with validation**
+- ✅ **Secure card addition with comprehensive security measures**
 
 #### 3. Database Setup
 - ✅ **PostgreSQL database configuration and connection**
+#### 4. Beneficiary Management
+- ✅ Add a beneficiary (same bank, national bank, international bank)
+- ✅ Edit or remove beneficiary details
+- ✅ Validate beneficiary account numbers before adding
 
 ### 🔄 **Tâches En Cours**
 
@@ -61,6 +66,14 @@ secure-banking-app/
 - ✅ **Update personal info (phone number, email)**
 - ✅ **Change password securely**
 - ✅ **Ensure data validation to prevent injection attacks**
+- ✅ **Advanced card security with anti-replay protection**
+- ✅ **Rate limiting and brute force protection**
+- ✅ **PIN strength validation and weak PIN detection**
+#### 4. Fund Transfers
+- [ ] Implement transfer to a beneficiary with OTP confirmation
+- [ ] Implement transfer history logging
+- [ ] Send confirmation email for every transfer
+- [ ] Validate input to prevent SQL/command injection
 
 #### 3. Security & Encryption
 - [ ] **Implement TLS/SSL encryption for all client-server communication**
@@ -182,17 +195,6 @@ Accéder à : **https://localhost:8443**
 
 ### 📋 **Tâches Restantes**
 
-#### 4. Beneficiary Management
-- [ ] Add a beneficiary (same bank, national bank, international bank)
-- [ ] Edit or remove beneficiary details
-- [ ] Validate beneficiary account numbers before adding
-
-#### 4. Fund Transfers
-- [ ] Implement transfer to a beneficiary with OTP confirmation
-- [ ] Implement transfer history logging
-- [ ] Send confirmation email for every transfer
-- [ ] Validate input to prevent SQL/command injection
-
 #### 5. Transaction History
 - [ ] Retrieve transaction history from a secure database
 - [ ] Filter transactions by date, amount, or beneficiary
@@ -220,15 +222,34 @@ Accéder à : **https://localhost:8443**
 
 ## 🔐 Sécurité Implémentée
 
+### Authentification & Sessions
 - **MFA/2FA**: Authentification à deux facteurs avec OTP email
 - **Password Policy**: Mots de passe forts (12+ caractères, complexité)
 - **BCrypt Hashing**: Chiffrement des mots de passe (coût 12)
 - **Session Management**: Timeout automatique 15 minutes, cookies sécurisés
 - **Account Locking**: Verrouillage après 5 tentatives échouées (30 min)
-- **Security Alerts**: Notifications email automatiques de sécurité
+- **Step-up Authentication**: Re-authentification pour opérations sensibles
+
+### Protection des Données
+- **AES-GCM Encryption**: Chiffrement des données de cartes bancaires
+- **PIN Security**: Validation avancée et détection des PINs faibles
+- **Data Masking**: Masquage des informations sensibles
 - **Input Validation**: Sanitisation côté client et serveur
-- **TLS/SSL**: Communications chiffrées obligatoires
 - **DTO Protection**: Isolation des données sensibles
+
+### Protection contre les Attaques
+- **Anti-Replay Tokens**: Protection contre les attaques de replay
+- **Rate Limiting**: 3 tentatives max, verrouillage 15 minutes
+- **CSRF Protection**: Tokens uniques à usage unique
+- **SQL Injection**: Requêtes paramétrées JPA/Hibernate
+- **Brute Force**: Détection et blocage automatique
+
+### Monitoring & Audit
+- **Security Alerts**: Notifications email automatiques de sécurité
+- **Comprehensive Logging**: Traçabilité complète avec masquage des données
+- **IP Tracking**: Enregistrement des adresses IP suspectes
+- **Suspicious Activity Detection**: Détection automatique d'activités anormales
+- **TLS/SSL**: Communications chiffrées obligatoires
 
 ## 📚 Documentation
 
@@ -236,6 +257,7 @@ Accéder à : **https://localhost:8443**
 - [📊 Rapport Technique Complet](docs/TECHNICAL-REPORT.md)
 - [🏗️ Architecture Technique](docs/ARCHITECTURE.md)
 - [🔒 Exigences de Sécurité](docs/SECURITY-REQUIREMENTS.md)
+- [🛡️ Implémentation Sécurité Cartes](docs/CARD-SECURITY-IMPLEMENTATION.md) - **NOUVEAU**
 
 ## 🛠️ Installation
 

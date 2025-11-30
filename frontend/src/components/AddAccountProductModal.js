@@ -7,7 +7,8 @@ const AddAccountProductModal = ({ isOpen, onClose, onSuccess }) => {
     accountType: '',
     cards: [],
     cardPins: {},
-    initialDeposit: ''
+    initialDeposit: '',
+    password: ''
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
@@ -55,6 +56,10 @@ const AddAccountProductModal = ({ isOpen, onClose, onSuccess }) => {
     if (!formData.accountType) {
       newErrors.accountType = 'Veuillez sélectionner un type de compte';
     }
+    
+    if (!formData.password) {
+      newErrors.password = 'Mot de passe requis pour cette opération';
+    }
 
     if (formData.initialDeposit && parseFloat(formData.initialDeposit) < 300) {
       newErrors.initialDeposit = 'Le dépôt initial doit être d\'au moins 300 TND';
@@ -83,7 +88,8 @@ const AddAccountProductModal = ({ isOpen, onClose, onSuccess }) => {
         accountType: sanitizeInput(formData.accountType),
         initialDeposit: formData.initialDeposit ? parseFloat(formData.initialDeposit) : null,
         selectedCards: formData.cards.length > 0 ? formData.cards : null,
-        cardPins: formData.cards.length > 0 ? formData.cards.map(cardId => formData.cardPins[cardId]) : null
+        cardPins: formData.cards.length > 0 ? formData.cards.map(cardId => formData.cardPins[cardId]) : null,
+        password: formData.password
       };
 
       const response = await fetch('http://localhost:8080/api/accounts/add', {
@@ -98,7 +104,7 @@ const AddAccountProductModal = ({ isOpen, onClose, onSuccess }) => {
       if (data.success) {
         onSuccess(data);
         onClose();
-        setFormData({ accountType: '', cards: [], cardPins: {}, initialDeposit: '' });
+        setFormData({ accountType: '', cards: [], cardPins: {}, initialDeposit: '', password: '' });
       } else {
         setErrors({ submit: data.message });
       }
@@ -181,6 +187,19 @@ const AddAccountProductModal = ({ isOpen, onClose, onSuccess }) => {
               placeholder="Minimum 300 TND"
             />
             {errors.initialDeposit && <span className="error">{errors.initialDeposit}</span>}
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="password">Mot de passe (confirmation requise) *</label>
+            <input
+              type="password"
+              id="password"
+              value={formData.password}
+              onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+              placeholder="Confirmez votre mot de passe"
+              className={errors.password ? 'error' : ''}
+            />
+            {errors.password && <span className="error">{errors.password}</span>}
           </div>
 
           {errors.submit && <div className="error-message">{errors.submit}</div>}

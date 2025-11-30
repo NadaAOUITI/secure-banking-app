@@ -3,7 +3,7 @@ package com.securebank.dto;
 import jakarta.validation.constraints.*;
 import java.math.BigDecimal;
 
-public class AddAccountRequest {
+public class AddAccountRequest extends SecureRequestDto {
     
     @NotBlank(message = "Le type de compte est requis")
     @Pattern(regexp = "^(CURRENT|SAVINGS|PREMIUM)$", message = "Type de compte invalide")
@@ -16,6 +16,9 @@ public class AddAccountRequest {
     
     private String[] selectedCards;
     private String[] cardPins;
+    
+    @NotBlank(message = "Mot de passe requis pour cette opération")
+    private String password;
     
     public AddAccountRequest() {}
     
@@ -30,4 +33,13 @@ public class AddAccountRequest {
     
     public String[] getCardPins() { return cardPins; }
     public void setCardPins(String[] cardPins) { this.cardPins = cardPins; }
+    
+    public String getPassword() { return password; }
+    public void setPassword(String password) { this.password = password; }
+    
+    @Override
+    public void clearSensitiveData() {
+        clearStringArray(this.cardPins);
+        this.password = clearString(this.password);
+    }
 }

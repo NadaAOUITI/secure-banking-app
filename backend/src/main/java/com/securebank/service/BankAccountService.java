@@ -120,4 +120,8 @@ public class BankAccountService {
         SecureRandom random = new SecureRandom();
         return String.format("%03d", random.nextInt(1000));
     }
+    
+    public List<BankCard> getCardsByAccount(BankAccount account) {
+        return cardRepository.findByAccountAndIsActiveTrue(account);
+    }
 }

@@ -5,6 +5,7 @@ import com.securebank.model.BankAccount;
 import com.securebank.model.User;
 import com.securebank.service.BankAccountService;
 import com.securebank.service.UserService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -23,11 +24,13 @@ public class BankAccountController {
     
     private final BankAccountService bankAccountService;
     private final UserService userService;
+    private final PasswordEncoder passwordEncoder;
     
     @Autowired
-    public BankAccountController(BankAccountService bankAccountService, UserService userService) {
+    public BankAccountController(BankAccountService bankAccountService, UserService userService, PasswordEncoder passwordEncoder) {
         this.bankAccountService = bankAccountService;
         this.userService = userService;
+        this.passwordEncoder = passwordEncoder;
     }
     
     @PostMapping("/add")
@@ -51,6 +54,13 @@ public class BankAccountController {
                 response.put("success", false);
                 response.put("message", "Utilisateur non trouvé.");
                 return ResponseEntity.status(401).body(response);
+            }
+            
+            // Verify password for sensitive operation
+            if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+                response.put("success", false);
+                response.put("message", "Mot de passe incorrect.");
+                return ResponseEntity.status(403).body(response);
             }
             
             // Validate request data
