@@ -32,6 +32,9 @@ public class AccountService {
     
     @Autowired
     private EncryptionUtil encryptionUtil;
+    
+    @Autowired
+    private SecureDataMaskingService maskingService;
 
     /**
      * Récupère les détails du compte de l'utilisateur authentifié
@@ -52,27 +55,26 @@ public class AccountService {
         // Récupération de tous les comptes bancaires actifs
         List<BankAccount> accounts = bankAccountRepository.findByUserAndIsActiveTrue(user);
         
-        // Récupération des cartes pour chaque compte
-        List<List<BankCard>> accountCards = accounts.stream()
+        // Construction sécurisée des AccountInfo avec masquage
+        List<AccountDetailsDto.AccountInfo> accountInfos = accounts.stream()
             .map(account -> {
                 List<BankCard> cards = bankCardRepository.findByAccountAndIsActiveTrue(account);
-                // Déchiffrer les données des cartes
-                cards.forEach(card -> {
-                    if (card.getCardNumberEncrypted() != null) {
-                        card.setCardNumberEncrypted(encryptionUtil.decrypt(card.getCardNumberEncrypted()));
-                    }
-                    if (card.getExpiryDateEncrypted() != null) {
-                        card.setExpiryDateEncrypted(encryptionUtil.decrypt(card.getExpiryDateEncrypted()));
-                    }
-                });
-                return cards;
+                List<AccountDetailsDto.CardInfo> cardInfos = cards.stream()
+                    .map(this::createSecureCardInfo)
+                    .collect(java.util.stream.Collectors.toList());
+                
+                return new AccountDetailsDto.AccountInfo(
+                    account.getId(),
+                    account.getAccountNumber(),
+                    account.getBalance(),
+                    account.getAccountType().name(),
+                    cardInfos
+                );
             })
             .collect(java.util.stream.Collectors.toList());
         
-        // Construction du DTO avec tous les comptes et cartes
         return new AccountDetailsDto(
-            accounts,
-            accountCards,
+            accountInfos,
             user.getFirstName(),
             user.getLastName(),
             user.getEmail(),
@@ -80,6 +82,17 @@ public class AccountService {
             decryptedCountry,
             decryptedAddress,
             "TND"
+        );
+    }
+    
+    private AccountDetailsDto.CardInfo createSecureCardInfo(BankCard card) {
+        String maskedNumber = maskingService.maskCardNumber(card.getCardNumberEncrypted());
+        String expiryDate = maskingService.decryptSafely(card.getExpiryDateEncrypted());
+        
+        return new AccountDetailsDto.CardInfo(
+            maskedNumber,
+            card.getCardType().name(),
+            expiryDate != null ? expiryDate : "**/**"
         );
     }
 }

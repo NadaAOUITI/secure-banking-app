@@ -3,6 +3,8 @@ package com.securebank.repository;
 import com.securebank.model.BankAccount;
 import com.securebank.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -16,4 +18,7 @@ public interface BankAccountRepository extends JpaRepository<BankAccount, Long> 
     Optional<BankAccount> findByAccountNumber(String accountNumber);
     
     boolean existsByAccountNumber(String accountNumber);
+    
+    @Query("SELECT COUNT(c) FROM BankCard c WHERE c.account.id = :accountId AND c.isActive = true")
+    long countActiveCardsByAccountId(@Param("accountId") Long accountId);
 }

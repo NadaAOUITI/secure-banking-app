@@ -7,7 +7,7 @@ import jakarta.validation.constraints.Size;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Pattern;
 
-public class UserRegistrationDto {
+public class UserRegistrationDto extends SecureRequestDto {
     
     @NotBlank(message = "Email requis")
     @Email(message = "Format d'email invalide")
@@ -130,4 +130,12 @@ public class UserRegistrationDto {
     
     public String[] getCardPins() { return cardPins; }
     public void setCardPins(String[] cardPins) { this.cardPins = cardPins; }
+    
+    @Override
+    public void clearSensitiveData() {
+        this.password = clearString(this.password);
+        this.confirmPassword = clearString(this.confirmPassword);
+        clearStringArray(this.cardPins);
+        this.documentNumber = clearString(this.documentNumber);
+    }
 }

@@ -2,15 +2,17 @@ import React, { useState } from 'react';
 import BankCard from './BankCard';
 import { useAccountDetails } from '../../../hooks/useAccountDetails';
 import { maskCardNumber } from '../../../utils/formatters';
+import AddCardModal from '../../AddCardModal';
 
 const CardsView = ({ user }) => {
   const [selectedCard, setSelectedCard] = useState(0);
-  const { data: accountData, loading, error } = useAccountDetails();
+  const [showAddCardModal, setShowAddCardModal] = useState(false);
+  const { data: accountData, loading, error, refetch } = useAccountDetails();
   
   // Extract all cards from all accounts
   const allCards = accountData?.accounts?.flatMap((account, accountIndex) => 
-    account.cards?.map(card => ({
-      id: `${accountIndex}-${card.cardType}`,
+    account.cards?.map((card, cardIndex) => ({
+      id: `${account.id}-${cardIndex}`,
       type: card.cardType,
       number: maskCardNumber(card.cardNumber),
       holder: `${accountData.firstName} ${accountData.lastName}`,
@@ -34,7 +36,7 @@ const CardsView = ({ user }) => {
             onClick={() => setSelectedCard(index)}
           />
         ))}
-        <div className="add-card-btn">
+        <div className="add-card-btn" onClick={() => setShowAddCardModal(true)}>
           <div className="add-icon">+</div>
           <span>Ajouter une carte</span>
         </div>
@@ -66,6 +68,25 @@ const CardsView = ({ user }) => {
           </div>
         </div>
       </div>
+      
+      <AddCardModal 
+        isOpen={showAddCardModal}
+        onClose={() => setShowAddCardModal(false)}
+        onSuccess={async (data) => {
+          console.log('Carte ajoutée:', data);
+          setShowAddCardModal(false);
+          // Attendre un peu avant de rafraîchir pour s'assurer que la DB est à jour
+          setTimeout(() => {
+            refetch();
+          }, 500);
+        }}
+        accounts={accountData?.accounts?.map(account => ({
+          id: account.id,
+          accountId: account.id,
+          accountNumber: account.accountNumber,
+          accountType: account.accountType
+        }))}
+      />
     </div>
   );
 };
