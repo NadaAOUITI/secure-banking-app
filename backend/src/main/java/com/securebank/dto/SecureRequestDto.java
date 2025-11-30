@@ -7,12 +7,21 @@ import java.util.Arrays;
  */
 public abstract class SecureRequestDto {
     
+    private String antiReplayToken;
+    private Long timestamp;
+    
     /**
      * Nettoie les données sensibles après utilisation
      */
     public void clearSensitiveData() {
         // Implémentation par défaut - à surcharger dans les classes filles
     }
+    
+    public String getAntiReplayToken() { return antiReplayToken; }
+    public void setAntiReplayToken(String antiReplayToken) { this.antiReplayToken = antiReplayToken; }
+    
+    public Long getTimestamp() { return timestamp; }
+    public void setTimestamp(Long timestamp) { this.timestamp = timestamp; }
     
     /**
      * Utilitaire pour nettoyer un tableau de chaînes

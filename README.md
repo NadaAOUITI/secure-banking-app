@@ -77,8 +77,8 @@ secure-banking-app/
 
 #### 3. Security & Encryption
 - [ ] **Implement TLS/SSL encryption for all client-server communication**
-- [ ] **Use a secure backend framework (Spring Boot + Spring Security)**
-- [ ] **Implement input validation and sanitization to prevent injection attacks**
+- ✅ **Use a secure backend framework (Spring Boot + Spring Security)**
+- ✅ **Implement input validation and sanitization to prevent injection attacks**
 
 ### 📋 **Tâches Restantes**
 
@@ -128,7 +128,10 @@ secure-banking-app/
 - **Anti-Replay Tokens**: Protection contre les attaques de replay
 - **Rate Limiting**: 3 tentatives max, verrouillage 15 minutes
 - **CSRF Protection**: Tokens uniques à usage unique
-- **SQL Injection**: Requêtes paramétrées JPA/Hibernate
+- **SQL Injection**: Requêtes paramétrées JPA/Hibernate + Validation avancée
+- **XSS Protection**: Sanitisation HTML complète côté client et serveur
+- **Input Validation**: Validation multi-couches avec intercepteur global
+- **Command Injection**: Protection par pattern matching et sanitisation
 - **Brute Force**: Détection et blocage automatique
 
 ### Monitoring & Audit
@@ -144,7 +147,8 @@ secure-banking-app/
 - [📊 Rapport Technique Complet](docs/TECHNICAL-REPORT.md)
 - [🏗️ Architecture Technique](docs/ARCHITECTURE.md)
 - [🔒 Exigences de Sécurité](docs/SECURITY-REQUIREMENTS.md)
-- [🛡️ Implémentation Sécurité Cartes](docs/CARD-SECURITY-IMPLEMENTATION.md) - **NOUVEAU**
+- [🛡️ Implémentation Sécurité Cartes](docs/CARD-SECURITY-IMPLEMENTATION.md)
+- [🛡️ Rapport Prévention Injection](docs/INJECTION-PREVENTION-REPORT.md) - **NOUVEAU**
 
 ## 🛠️ Installation
 
