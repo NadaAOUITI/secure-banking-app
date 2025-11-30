@@ -35,6 +35,9 @@ public class SecurityConfig {
             )
             .authorizeHttpRequests(authz -> authz
                 .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
+                .requestMatchers("/").permitAll()
+                .requestMatchers("/favicon.ico").permitAll()
+                .requestMatchers("/error").permitAll()
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/onboarding/**").permitAll()
                 .requestMatchers("/api/account/**").authenticated()
@@ -67,7 +70,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(Arrays.asList("http://localhost:3000")); // Frontend React
+        configuration.setAllowedOriginPatterns(Arrays.asList("https://localhost:3000")); // Frontend React
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);

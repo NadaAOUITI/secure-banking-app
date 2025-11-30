@@ -76,7 +76,7 @@ secure-banking-app/
 - [ ] Validate input to prevent SQL/command injection
 
 #### 3. Security & Encryption
-- [ ] **Implement TLS/SSL encryption for all client-server communication**
+- ✅ **Implement TLS/SSL encryption for all client-server communication**
 - ✅ **Use a secure backend framework (Spring Boot + Spring Security)**
 - ✅ **Implement input validation and sanitization to prevent injection attacks**
 
@@ -148,7 +148,8 @@ secure-banking-app/
 - [🏗️ Architecture Technique](docs/ARCHITECTURE.md)
 - [🔒 Exigences de Sécurité](docs/SECURITY-REQUIREMENTS.md)
 - [🛡️ Implémentation Sécurité Cartes](docs/CARD-SECURITY-IMPLEMENTATION.md)
-- [🛡️ Rapport Prévention Injection](docs/INJECTION-PREVENTION-REPORT.md) - **NOUVEAU**
+- [🛡️ Rapport Prévention Injection](docs/INJECTION-PREVENTION-REPORT.md)
+- [🔒 Guide Configuration TLS/SSL](docs/TLS-SSL-SETUP-GUIDE.md) - **NOUVEAU**
 
 ## 🛠️ Installation
 
