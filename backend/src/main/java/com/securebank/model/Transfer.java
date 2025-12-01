@@ -1,15 +1,15 @@
 package com.securebank.model;
 
 import jakarta.persistence.*;
-import java.math. BigDecimal;
-import java.time. LocalDateTime;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "transfers")
 public class Transfer {
 
     @Id
-    @GeneratedValue(strategy = GenerationType. IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -20,7 +20,7 @@ public class Transfer {
     @JoinColumn(name = "beneficiary_id", nullable = false)
     private Beneficiary beneficiary;
 
-    @ManyToOne(fetch = FetchType. LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
@@ -38,7 +38,7 @@ public class Transfer {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
-    private TransferStatus status = TransferStatus. PENDING;
+    private TransferStatus status = TransferStatus.PENDING;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "transfer_type", nullable = false)
@@ -157,6 +157,6 @@ public class Transfer {
     public void setFailureReason(String failureReason) { this.failureReason = failureReason; }
 
     public BigDecimal getTotalAmount() {
-        return amount. add(fee != null ? fee : BigDecimal.ZERO);
+        return amount.add(fee != null ? fee : BigDecimal.ZERO);
     }
 }

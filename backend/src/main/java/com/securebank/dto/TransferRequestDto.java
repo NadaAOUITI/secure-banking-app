@@ -12,7 +12,7 @@ public class TransferRequestDto {
     private Long beneficiaryId;
 
     @NotNull(message = "Le montant est requis")
-    @DecimalMin(value = "1. 0", message = "Le montant minimum est 1 TND")
+    @DecimalMin(value = "1.0", message = "Le montant minimum est 1 TND")
     @DecimalMax(value = "50000.0", message = "Le montant maximum est 50,000 TND")
     private BigDecimal amount;
 
@@ -22,31 +22,65 @@ public class TransferRequestDto {
 
     private String currency = "TND";
 
-    // For OTP verification
     private String transferReference;
 
     @Pattern(regexp = "^[0-9]{6}$", message = "Le code OTP doit contenir 6 chiffres")
     private String otpCode;
 
     // Getters and Setters
-    public Long getSenderAccountId() { return senderAccountId; }
-    public void setSenderAccountId(Long senderAccountId) { this.senderAccountId = senderAccountId; }
+    public Long getSenderAccountId() {
+        return senderAccountId;
+    }
 
-    public Long getBeneficiaryId() { return beneficiaryId; }
-    public void setBeneficiaryId(Long beneficiaryId) { this.beneficiaryId = beneficiaryId; }
+    public void setSenderAccountId(Long senderAccountId) {
+        this.senderAccountId = senderAccountId;
+    }
 
-    public BigDecimal getAmount() { return amount; }
-    public void setAmount(BigDecimal amount) { this.amount = amount; }
+    public Long getBeneficiaryId() {
+        return beneficiaryId;
+    }
 
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
+    public void setBeneficiaryId(Long beneficiaryId) {
+        this.beneficiaryId = beneficiaryId;
+    }
 
-    public String getCurrency() { return currency; }
-    public void setCurrency(String currency) { this.currency = currency; }
+    public BigDecimal getAmount() {
+        return amount;
+    }
 
-    public String getTransferReference() { return transferReference; }
-    public void setTransferReference(String transferReference) { this.transferReference = transferReference; }
+    public void setAmount(BigDecimal amount) {
+        this.amount = amount;
+    }
 
-    public String getOtpCode() { return otpCode; }
-    public void setOtpCode(String otpCode) { this. otpCode = otpCode; }
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getCurrency() {
+        return currency;
+    }
+
+    public void setCurrency(String currency) {
+        this.currency = currency;
+    }
+
+    public String getTransferReference() {
+        return transferReference;
+    }
+
+    public void setTransferReference(String transferReference) {
+        this.transferReference = transferReference;
+    }
+
+    public String getOtpCode() {
+        return otpCode;
+    }
+
+    public void setOtpCode(String otpCode) {
+        this.otpCode = otpCode;
+    }
 }
