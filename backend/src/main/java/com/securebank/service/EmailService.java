@@ -1,5 +1,6 @@
 package com.securebank.service;
 
+import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -294,6 +295,26 @@ public class EmailService {
         
         sendNotificationEmail(toEmail, "📧 Confirmation Email - Secure Banking", "📧 Confirmez votre Email", message, "#28a745");
     }
+    public void sendTransferEmail(String toEmail, String subject, String htmlContent) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setFrom(fromEmail);
+            helper.setTo(toEmail);
+            helper.setSubject(subject);
+            helper.setText(htmlContent, true);
+
+            mailSender.send(message);
+            System.out.println("📤 Email de transfert envoyé à: " + toEmail);
+
+        } catch (Exception e) {
+            System.err.println("❌ Erreur envoi email transfert: " + e.getMessage());
+        }
+    }
+
+
+
 
 
 

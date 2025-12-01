@@ -329,15 +329,7 @@ public class TransferService {
         ));
     }
 
-    private void sendTransferConfirmationEmail(Transfer transfer) {
-        try {
-            String subject = "✅ Virement effectué - " + transfer.getReference();
-            String content = buildTransferEmailContent(transfer);
-            // emailService.sendHtmlEmail(transfer.getUser().getEmail(), subject, content);
-        } catch (Exception e) {
-            System.err.println("Failed to send transfer confirmation email: " + e.getMessage());
-        }
-    }
+
 
     private String buildTransferEmailContent(Transfer transfer) {
         String executedDate = transfer.getExecutedAt() != null
@@ -357,5 +349,20 @@ public class TransferService {
                 "<hr style=\"border: 1px solid #ddd;\">" +
                 "<p style=\"color: #888; font-size: 12px;\">Si vous n'êtes pas à l'origine de ce virement, contactez immédiatement notre service client.</p>" +
                 "</div></body></html>";
+    }
+    private void sendTransferConfirmationEmail(Transfer transfer) {
+        try {
+            String subject = "✅ Virement effectué - " + transfer. getReference();
+            String content = buildTransferEmailContent(transfer);
+
+            // DÉCOMMENTÉ - Envoi réel de l'email
+            emailService.sendTransferEmail(transfer.getUser().getEmail(), subject, content);
+
+            System.out.println("[TRANSFER] Email de confirmation envoyé à: " + transfer.getUser().getEmail());
+        } catch (Exception e) {
+            // On log l'erreur mais on ne bloque pas le transfert
+            System.err.println("[TRANSFER] Échec envoi email de confirmation: " + e.getMessage());
+            // Ne pas relancer l'exception pour ne pas faire échouer le transfert
+        }
     }
 }
