@@ -1,277 +1,252 @@
 import React, { useState } from 'react';
-import './AddAccountModal.css';
+import './ProfileUpdateModal.css';
 
-const ProfileUpdateModal = ({ isOpen, onClose, onSuccess }) => {
-  const [step, setStep] = useState('initiate'); // initiate, update
-  const [formData, setFormData] = useState({
-    otp: '',
-    currentPassword: '',
-    newPassword: '',
-    confirmNewPassword: '',
-    newEmail: '',
-    newPhone: '',
-    newAddress: '',
-    newCountry: ''
-  });
-  const [errors, setErrors] = useState({});
-  const [loading, setLoading] = useState(false);
-  const [otpTimer, setOtpTimer] = useState(0);
-
-  const initiateUpdate = async () => {
-    setLoading(true);
-    try {
-      const response = await fetch('http://localhost:8080/api/profile/initiate-update', {
-        method: 'POST',
-        credentials: 'include'
-      });
-
-      const data = await response.json();
-      if (data.success) {
-        setStep('update');
-        setOtpTimer(60);
-        const timer = setInterval(() => {
-          setOtpTimer(prev => {
-            if (prev <= 1) {
-              clearInterval(timer);
-              return 0;
-            }
-            return prev - 1;
-          });
-        }, 1000);
-      } else {
-        setErrors({ submit: data.message });
-      }
-    } catch (error) {
-      setErrors({ submit: 'Erreur de connexion' });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    if (!validateForm()) return;
-
-    setLoading(true);
-    try {
-      const response = await fetch('http://localhost:8080/api/profile/update', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify(formData)
-      });
-
-      const data = await response.json();
-      if (data.success) {
-        onSuccess(data);
-        if (data.logoutRequired) {
-          // Redirection vers login après changement de mot de passe
-          window.location.href = '/login';
-        }
-      } else {
-        setErrors({ submit: data.message });
-      }
-    } catch (error) {
-      setErrors({ submit: 'Erreur de connexion' });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const validateForm = () => {
-    const newErrors = {};
-
-    if (!formData.otp || !/^\d{6}$/.test(formData.otp)) {
-      newErrors.otp = 'Code OTP requis (6 chiffres)';
-    }
-
-    // Validation changement de mot de passe
-    if (formData.currentPassword || formData.newPassword) {
-      if (!formData.currentPassword) {
-        newErrors.currentPassword = 'Mot de passe actuel requis';
-      }
-      if (!formData.newPassword || formData.newPassword.length < 12) {
-        newErrors.newPassword = 'Nouveau mot de passe requis (12+ caractères)';
-      }
-      if (formData.newPassword !== formData.confirmNewPassword) {
-        newErrors.confirmNewPassword = 'Les mots de passe ne correspondent pas';
-      }
-    }
-
-    // Validation email
-    if (formData.newEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.newEmail)) {
-      newErrors.newEmail = 'Format d\'email invalide';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleInputChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: '' }));
-    }
-  };
-
-  const handleClose = () => {
-    setFormData({
-      otp: '', currentPassword: '', newPassword: '', confirmNewPassword: '',
-      newEmail: '', newPhone: '', newAddress: '', newCountry: ''
+const ProfileUpdateModal = ({ isOpen, onClose, updateType, onSuccess }) => {
+    const [step, setStep] = useState(1); // 1: Update form, 2: Email confirmation
+    const [formData, setFormData] = useState({
+        otp: '',
+        currentPassword: '',
+        newPassword: '',
+        confirmNewPassword: '',
+        newEmail: '',
+        newPhone: '',
+        newAddress: '',
+        newCountry: '',
+        confirmationOtp: ''
     });
-    setErrors({});
-    setStep('initiate');
-    setOtpTimer(0);
-    onClose();
-  };
+    const [loading, setLoading] = useState(false);
+    const [message, setMessage] = useState('');
+    const [otpExpiry, setOtpExpiry] = useState(0);
+    const [pendingEmail, setPendingEmail] = useState('');
 
-  if (!isOpen) return null;
+    const handleInputChange = (e) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
 
-  return (
-    <div className="modal-overlay" onClick={handleClose}>
-      <div className="modal-content" onClick={e => e.stopPropagation()}>
-        <div className="modal-header">
-          <h2>Modifier le profil</h2>
-          <button className="close-btn" onClick={handleClose}>&times;</button>
-        </div>
-
-        {step === 'initiate' && (
-          <div className="initiate-step">
-            <p>Pour des raisons de sécurité, nous devons vérifier votre identité avant toute modification.</p>
-            <p>Un code de sécurité sera envoyé à votre email.</p>
+    const submitUpdate = async () => {
+        setLoading(true);
+        try {
+            const updateData = {};
             
-            {errors.submit && <div className="error-message">{errors.submit}</div>}
+            if (updateType === 'password') {
+                updateData.currentPassword = formData.currentPassword;
+                updateData.newPassword = formData.newPassword;
+                updateData.confirmNewPassword = formData.confirmNewPassword;
+            } else if (updateType === 'email') {
+                updateData.newEmail = formData.newEmail;
+            } else if (updateType === 'phone') {
+                updateData.newPhone = formData.newPhone;
+            } else if (updateType === 'address') {
+                updateData.newAddress = formData.newAddress;
+            } else if (updateType === 'country') {
+                updateData.newCountry = formData.newCountry;
+            }
             
-            <div className="modal-actions">
-              <button type="button" onClick={handleClose} className="btn-secondary">
-                Annuler
-              </button>
-              <button onClick={initiateUpdate} disabled={loading} className="btn-primary">
-                {loading ? 'Envoi...' : 'Envoyer le code'}
-              </button>
-            </div>
-          </div>
-        )}
+            const response = await fetch('https://localhost:8080/api/profile/update', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify(updateData)
+            });
+            const data = await response.json();
+            
+            if (data.success) {
+                if (data.requiresConfirmation && updateType === 'email') {
+                    setStep(2);
+                    setPendingEmail(formData.newEmail);
+                    setMessage(data.message);
+                } else {
+                    setMessage(data.message);
+                    if (data.logoutRequired) {
+                        setTimeout(() => window.location.href = '/login', 2000);
+                    } else {
+                        setTimeout(() => {
+                            onSuccess(data);
+                            onClose();
+                        }, 2000);
+                    }
+                }
+            } else {
+                setMessage(data.message);
+            }
+        } catch (error) {
+            setMessage('Erreur de connexion');
+        }
+        setLoading(false);
+    };
 
-        {step === 'update' && (
-          <form onSubmit={handleSubmit} className="add-account-form">
-            <div className="form-group">
-              <label htmlFor="otp">Code de sécurité *</label>
-              <input
-                type="text"
-                id="otp"
-                maxLength="6"
-                value={formData.otp}
-                onChange={(e) => handleInputChange('otp', e.target.value.replace(/\D/g, ''))}
-                placeholder="123456"
-                className={errors.otp ? 'error' : ''}
-              />
-              {errors.otp && <span className="error">{errors.otp}</span>}
-              {otpTimer > 0 && (
-                <small className="timer">Code expire dans {otpTimer}s</small>
-              )}
-            </div>
+    const confirmEmailChange = async () => {
+        setLoading(true);
+        try {
+            const response = await fetch('https://localhost:8080/api/profile/confirm-email', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ confirmationOtp: formData.confirmationOtp })
+            });
+            const data = await response.json();
+            
+            if (data.success) {
+                setMessage(data.message);
+                setTimeout(() => {
+                    onSuccess(data);
+                    onClose();
+                }, 2000);
+            } else {
+                setMessage(data.message);
+            }
+        } catch (error) {
+            setMessage('Erreur de connexion');
+        }
+        setLoading(false);
+    };
 
-            <h3>Changement de mot de passe</h3>
-            <div className="form-group">
-              <label htmlFor="currentPassword">Mot de passe actuel</label>
-              <input
+    const renderPasswordForm = () => (
+        <div className="form-group">
+            <input
                 type="password"
-                id="currentPassword"
+                name="currentPassword"
+                placeholder="Mot de passe actuel"
                 value={formData.currentPassword}
-                onChange={(e) => handleInputChange('currentPassword', e.target.value)}
-                className={errors.currentPassword ? 'error' : ''}
-              />
-              {errors.currentPassword && <span className="error">{errors.currentPassword}</span>}
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="newPassword">Nouveau mot de passe</label>
-              <input
+                onChange={handleInputChange}
+                required
+            />
+            <input
                 type="password"
-                id="newPassword"
+                name="newPassword"
+                placeholder="Nouveau mot de passe"
                 value={formData.newPassword}
-                onChange={(e) => handleInputChange('newPassword', e.target.value)}
-                className={errors.newPassword ? 'error' : ''}
-              />
-              {errors.newPassword && <span className="error">{errors.newPassword}</span>}
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="confirmNewPassword">Confirmer nouveau mot de passe</label>
-              <input
+                onChange={handleInputChange}
+                required
+            />
+            <input
                 type="password"
-                id="confirmNewPassword"
+                name="confirmNewPassword"
+                placeholder="Confirmer nouveau mot de passe"
                 value={formData.confirmNewPassword}
-                onChange={(e) => handleInputChange('confirmNewPassword', e.target.value)}
-                className={errors.confirmNewPassword ? 'error' : ''}
-              />
-              {errors.confirmNewPassword && <span className="error">{errors.confirmNewPassword}</span>}
-            </div>
+                onChange={handleInputChange}
+                required
+            />
+        </div>
+    );
 
-            <h3>Informations personnelles</h3>
-            <div className="form-group">
-              <label htmlFor="newEmail">Nouvel email</label>
-              <input
+    const renderEmailForm = () => (
+        <div className="form-group">
+            <input
                 type="email"
-                id="newEmail"
+                name="newEmail"
+                placeholder="Nouvel email"
                 value={formData.newEmail}
-                onChange={(e) => handleInputChange('newEmail', e.target.value)}
-                className={errors.newEmail ? 'error' : ''}
-              />
-              {errors.newEmail && <span className="error">{errors.newEmail}</span>}
-            </div>
+                onChange={handleInputChange}
+                pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
+                title="Veuillez entrer un email valide"
+                required
+            />
+        </div>
+    );
 
-            <div className="form-group">
-              <label htmlFor="newPhone">Nouveau téléphone</label>
-              <input
+    const renderPhoneForm = () => (
+        <div className="form-group">
+            <input
                 type="tel"
-                id="newPhone"
+                name="newPhone"
+                placeholder="Nouveau téléphone"
                 value={formData.newPhone}
-                onChange={(e) => handleInputChange('newPhone', e.target.value)}
-                className={errors.newPhone ? 'error' : ''}
-              />
-              {errors.newPhone && <span className="error">{errors.newPhone}</span>}
-            </div>
+                onChange={handleInputChange}
+                pattern="[+]?[0-9]{8,15}"
+                required
+            />
+        </div>
+    );
 
-            <div className="form-group">
-              <label htmlFor="newAddress">Nouvelle adresse</label>
-              <input
+    const renderAddressForm = () => (
+        <div className="form-group">
+            <input
                 type="text"
-                id="newAddress"
+                name="newAddress"
+                placeholder="Nouvelle adresse"
                 value={formData.newAddress}
-                onChange={(e) => handleInputChange('newAddress', e.target.value)}
-                className={errors.newAddress ? 'error' : ''}
-              />
-            </div>
+                onChange={handleInputChange}
+                required
+            />
+        </div>
+    );
 
-            <div className="form-group">
-              <label htmlFor="newCountry">Nouveau pays</label>
-              <input
+    const renderCountryForm = () => (
+        <div className="form-group">
+            <input
                 type="text"
-                id="newCountry"
+                name="newCountry"
+                placeholder="Nouveau pays"
                 value={formData.newCountry}
-                onChange={(e) => handleInputChange('newCountry', e.target.value)}
-                className={errors.newCountry ? 'error' : ''}
-              />
-            </div>
+                onChange={handleInputChange}
+                required
+            />
+        </div>
+    );
 
-            {errors.submit && <div className="error-message">{errors.submit}</div>}
+    const renderEmailConfirmationForm = () => (
+        <div className="form-group">
+            <p>Un code de confirmation a été envoyé à <strong>{pendingEmail}</strong></p>
+            <input
+                type="text"
+                name="confirmationOtp"
+                placeholder="Code de confirmation (6 chiffres)"
+                value={formData.confirmationOtp}
+                onChange={handleInputChange}
+                maxLength="6"
+                required
+            />
+            <button 
+                className="btn-primary" 
+                onClick={confirmEmailChange}
+                disabled={loading || formData.confirmationOtp.length !== 6}
+            >
+                {loading ? 'Confirmation...' : 'Confirmer l\'email'}
+            </button>
+        </div>
+    );
 
-            <div className="modal-actions">
-              <button type="button" onClick={handleClose} className="btn-secondary">
-                Annuler
-              </button>
-              <button type="submit" disabled={loading || otpTimer === 0} className="btn-primary">
-                {loading ? 'Mise à jour...' : 'Mettre à jour'}
-              </button>
+    if (!isOpen) return null;
+
+    return (
+        <div className="modal-overlay">
+            <div className="modal-content">
+                <div className="modal-header">
+                    <h3>Modification du profil</h3>
+                    <button className="close-btn" onClick={onClose}>×</button>
+                </div>
+
+                <div className="modal-body">
+                    {step === 1 ? (
+                        <>
+                            {updateType === 'password' && renderPasswordForm()}
+                            {updateType === 'email' && renderEmailForm()}
+                            {updateType === 'phone' && renderPhoneForm()}
+                            {updateType === 'address' && renderAddressForm()}
+                            {updateType === 'country' && renderCountryForm()}
+
+                            <button 
+                                className="btn-primary" 
+                                onClick={submitUpdate}
+                                disabled={loading}
+                            >
+                                {loading ? 'Modification...' : 'Confirmer'}
+                            </button>
+                        </>
+                    ) : (
+                        renderEmailConfirmationForm()
+                    )}
+                </div>
+
+                {message && (
+                    <div className={`message ${message.includes('succès') ? 'success' : 'error'}`}>
+                        {message}
+                    </div>
+                )}
             </div>
-          </form>
-        )}
-      </div>
-    </div>
-  );
+        </div>
+    );
 };
 
 export default ProfileUpdateModal;

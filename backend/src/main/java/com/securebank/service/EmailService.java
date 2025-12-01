@@ -205,27 +205,96 @@ public class EmailService {
     }
 
     /**
-     * Envoie un email HTML
-     * @param to adresse email du destinataire
-     * @param subject sujet de l'email
-     * @param htmlContent contenu HTML de l'email
+     * Méthode générique pour envoyer des emails de notification
      */
-    public void sendHtmlEmail(String to, String subject, String htmlContent) {
+    private void sendNotificationEmail(String toEmail, String subject, String title, String message, String color) {
         try {
             MimeMessage mimeMessage = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
-
+            
             helper.setFrom(fromEmail);
-            helper.setTo(to);
+            helper.setTo(toEmail);
             helper.setSubject(subject);
-            helper.setText(htmlContent, true); // true = isHtml
-
-            mailSender. send(mimeMessage);
-            System.out.println("✅ Email HTML envoyé à: " + to);
-
+            helper.setText(buildNotificationTemplate(title, message, color), true);
+            
+            mailSender.send(mimeMessage);
+            
         } catch (Exception e) {
-            System.err.println("❌ Erreur envoi email HTML: " + e. getMessage());
-            throw new RuntimeException("Erreur lors de l'envoi de l'email", e);
+            System.err.println("❌ Erreur email notification: " + e.getMessage());
         }
     }
+
+    /**
+     * Template HTML modulaire pour les notifications
+     */
+    private String buildNotificationTemplate(String title, String message, String color) {
+        return "<html><body style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;'>" +
+               "<div style='background: " + color + "; padding: 30px; text-align: center; border-radius: 10px 10px 0 0;'>" +
+               "<h1 style='color: white; margin: 0;'>" + title + "</h1>" +
+               "</div>" +
+               "<div style='background: white; padding: 40px; border-radius: 0 0 10px 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);'>" +
+               message +
+               "<p style='color: #dc3545;'><strong>Si ce n'est pas vous, contactez immédiatement notre équipe support.</strong></p>" +
+               "</div></body></html>";
+    }
+
+    /**
+     * Envoie un code OTP de sécurité pour modification de profil
+     */
+    public void sendSecurityOtp(String toEmail, String otpCode, String firstName) {
+        try {
+            String message = "<p>Bonjour " + firstName + ",</p>" +
+                            "<p>Voici votre code de sécurité pour modifier votre profil :</p>" +
+                            "<div style='background: #f8f9fa; border: 2px dashed #007bff; border-radius: 8px; padding: 30px; text-align: center; margin: 30px 0;'>" +
+                            "<div style='font-size: 36px; font-weight: bold; color: #007bff; letter-spacing: 8px; font-family: monospace;'>" +
+                            otpCode + "</div></div>" +
+                            "<p><strong>⚠️ Ce code expire dans 1 minute</strong></p>";
+            
+            sendNotificationEmail(toEmail, "🔐 Code de Sécurité - Modification Profil", "🔐 Code de Sécurité", message, "#007bff");
+            System.out.println("✅ Code OTP sécurité envoyé à: " + toEmail);
+            
+        } catch (Exception e) {
+            System.err.println("❌ Erreur email sécurité: " + e.getMessage());
+            displayOtpInConsole(toEmail, otpCode);
+        }
+    }
+
+    /**
+     * Envoie une notification de changement de mot de passe
+     */
+    public void sendPasswordChangeNotification(String toEmail, String firstName, String clientIp) {
+        String message = "<p>Bonjour " + firstName + ",</p>" +
+                        "<p>Votre mot de passe a été modifié avec succès.</p>" +
+                        "<p><strong>IP:</strong> " + clientIp + "</p>";
+        
+        sendNotificationEmail(toEmail, "🔒 Mot de passe modifié - Secure Banking", "🔒 Mot de passe modifié", message, "#28a745");
+    }
+
+    /**
+     * Envoie une notification de changement d'email
+     */
+    public void sendEmailChangeNotification(String toEmail, String firstName, String clientIp) {
+        String message = "<p>Bonjour " + firstName + ",</p>" +
+                        "<p>Votre adresse email a été modifiée avec succès.</p>" +
+                        "<p><strong>IP:</strong> " + clientIp + "</p>";
+        
+        sendNotificationEmail(toEmail, "📧 Email modifié - Secure Banking", "📧 Email Modifié", message, "#17a2b8");
+    }
+
+    /**
+     * Envoie un code OTP de confirmation pour nouveau email
+     */
+    public void sendEmailConfirmationOtp(String toEmail, String firstName, String otpCode) {
+        String message = "<p>Bonjour " + firstName + ",</p>" +
+                        "<p>Voici votre code de confirmation pour votre nouvel email :</p>" +
+                        "<div style='background: #f8f9fa; border: 2px dashed #28a745; border-radius: 8px; padding: 30px; text-align: center; margin: 30px 0;'>" +
+                        "<div style='font-size: 36px; font-weight: bold; color: #28a745; letter-spacing: 8px; font-family: monospace;'>" +
+                        otpCode + "</div></div>" +
+                        "<p><strong>⚠️ Ce code expire dans 5 minutes</strong></p>";
+        
+        sendNotificationEmail(toEmail, "📧 Confirmation Email - Secure Banking", "📧 Confirmez votre Email", message, "#28a745");
+    }
+
+
+
 }

@@ -55,143 +55,30 @@ secure-banking-app/
 
 #### 3. Database Setup
 - ✅ **PostgreSQL database configuration and connection**
+
+#### 3. Security & Encryption
+- ✅ **Implement TLS/SSL encryption for all client-server communication**
+- ✅ **Use a secure backend framework (Spring Boot + Spring Security)**
+- ✅ **Implement input validation and sanitization to prevent injection attacks**
+
 #### 4. Beneficiary Management
 - ✅ Add a beneficiary (same bank, national bank, international bank)
 - ✅ Edit or remove beneficiary details
 - ✅ Validate beneficiary account numbers before adding
 
+#### 6. Security Testing
+- ✅ **Perform penetration test for SQL injection / XSS**
+- ✅ **Authentication bypass attempt**
+- ✅ **Session hijacking simulation**
+- ✅ **Document results and mitigation measures**
+
 ### 🔄 **Tâches En Cours**
 
-#### 2. Account Management
-- ✅ **Update personal info (phone number, email)**
-- ✅ **Change password securely**
-- ✅ **Ensure data validation to prevent injection attacks**
-- ✅ **Advanced card security with anti-replay protection**
-- ✅ **Rate limiting and brute force protection**
-- ✅ **PIN strength validation and weak PIN detection**
 #### 4. Fund Transfers
 - [ ] Implement transfer to a beneficiary with OTP confirmation
 - [ ] Implement transfer history logging
 - [ ] Send confirmation email for every transfer
-- [ ] Validate input to prevent SQL/command injection
-
-#### 3. Security & Encryption
-- [ ] **Implement TLS/SSL encryption for all client-server communication**
-      Generate a Keystore
-
-Use keytool to create a self-signed certificate (for development/testing): done 
-
- ###  Création du certificat (Chacun doit créer son propre cetificat ):
- ## ⚠️ Important
-
-- **NE PAS** committer le fichier `securebank.p12` sur Git
-- Chaque développeur doit créer son propre keystore
-- Le mot de passe `securebank` est pour le développement uniquement
- # 🔐 Guide de Création du Keystore SSL pour l'Équipe
-
-## Instructions pour Créer le Keystore `securebank.p12`
-
----
-
-### Étape 1 : Ouvrir PowerShell
-
-Ouvrez **PowerShell** et naviguez vers le dossier du projet :
-
-```powershell
-cd C:\chemin\vers\secure-banking-app\backend\src\main\resources
-```
-
----
-
-### Étape 2 : Créer le Keystore
-
-```powershell
-keytool -genkeypair -alias securebank -keyalg RSA -keysize 2048 -storetype PKCS12 -keystore securebank.p12 -validity 3650 -storepass securebank -dname "CN=localhost,OU=dev,O=secureBank,L=Paris,S=IDF,C=FR"
-```
-
----
-
-### Étape 3 : Vérifier la Création
-
-```powershell
-keytool -list -keystore securebank.p12 -storepass securebank
-```
-
-**Résultat attendu :**
-```
-Keystore type: PKCS12
-Keystore provider: SUN
-
-Your keystore contains 1 entry
-
-securebank, 29 nov.  2025, PrivateKeyEntry,
-Certificate fingerprint (SHA-256): ... 
-```
-
----
-
-### Étape 4 : Vérifier `application.properties`
-
-Assurez-vous que le fichier `application. properties` contient :
-
-```properties
-# HTTPS Configuration
-server.port=8443
-server.ssl. enabled=true
-server.ssl.key-store=classpath:securebank.p12
-server.ssl.key-store-password=securebank
-server. ssl.key-store-type=PKCS12
-server. ssl.key-alias=securebank
-```
-
----
-
-### Étape 5 : (Optionnel) Faire Confiance au Certificat
-
-Pour supprimer l'avertissement du navigateur :
-
-**5.1 - Exporter le certificat :**
-```powershell
-keytool -exportcert -alias securebank -keystore securebank.p12 -file securebank.crt -storepass securebank
-```
-
-**5.2 - Ouvrir PowerShell en Administrateur et importer :**
-```powershell
-cd C:\chemin\vers\secure-banking-app\backend\src\main\resources
-certutil -addstore -f "ROOT" securebank.crt
-```
-
-**5.3 - Redémarrer Chrome**
-
----
-
-### Étape 6 : Lancer l'Application
-
-```powershell
-cd C:\chemin\vers\secure-banking-app
-mvn spring-boot:run
-```
-
-Accéder à : **https://localhost:8443**
-
-
-
-## 📋 Résumé des Informations du Certificat
-
-| Propriété | Valeur |
-|-----------|--------|
-| **Alias** | securebank |
-| **Type** | PKCS12 |
-| **Fichier** | securebank.p12 |
-| **Mot de passe** | securebank |
-| **Algorithme** | RSA 2048 bits |
-| **Validité** | 10 ans |
-| **CN (Common Name)** | localhost |
-| **OU (Organization Unit)** | dev |
-| **O (Organization)** | secureBank |
-
-
-
+- ✅ **Validate input to prevent SQL/command injection** *(Déjà implémenté globalement : ValidationInterceptor + InputSanitizer + ValidationService + JPA/Hibernate requêtes paramétrées)*
 
 ### 📋 **Tâches Restantes**
 
@@ -200,15 +87,9 @@ Accéder à : **https://localhost:8443**
 - [ ] Filter transactions by date, amount, or beneficiary
 - [ ] Display securely on the app interface without exposing sensitive info
 
-#### 6. Security Testing
-- [ ] Perform penetration test for SQL injection / XSS
-- [ ] Authentication bypass attempt
-- [ ] Session hijacking simulation
-- [ ] Document results and mitigation measures
-
 #### 7. Optional / Bonus Features
 - [ ] Admin panel to monitor user activity and security alerts
-- [ ] Additional input validation, e.g., regex for account numbers
+- ✅ **Additional input validation, e.g., regex for account numbers**
 - [ ] Implement logging for all critical operations for auditing
 
 ### 🎯 **Prochaines Étapes Recommandées**
@@ -241,7 +122,10 @@ Accéder à : **https://localhost:8443**
 - **Anti-Replay Tokens**: Protection contre les attaques de replay
 - **Rate Limiting**: 3 tentatives max, verrouillage 15 minutes
 - **CSRF Protection**: Tokens uniques à usage unique
-- **SQL Injection**: Requêtes paramétrées JPA/Hibernate
+- **SQL Injection**: Requêtes paramétrées JPA/Hibernate + Validation avancée
+- **XSS Protection**: Sanitisation HTML complète côté client et serveur
+- **Input Validation**: Validation multi-couches avec intercepteur global
+- **Command Injection**: Protection par pattern matching et sanitisation
 - **Brute Force**: Détection et blocage automatique
 
 ### Monitoring & Audit
@@ -257,7 +141,9 @@ Accéder à : **https://localhost:8443**
 - [📊 Rapport Technique Complet](docs/TECHNICAL-REPORT.md)
 - [🏗️ Architecture Technique](docs/ARCHITECTURE.md)
 - [🔒 Exigences de Sécurité](docs/SECURITY-REQUIREMENTS.md)
-- [🛡️ Implémentation Sécurité Cartes](docs/CARD-SECURITY-IMPLEMENTATION.md) - **NOUVEAU**
+- [🛡️ Implémentation Sécurité Cartes](docs/CARD-SECURITY-IMPLEMENTATION.md)
+- [🛡️ Rapport Prévention Injection](docs/INJECTION-PREVENTION-REPORT.md)
+- [🔒 Guide Configuration TLS/SSL](docs/TLS-SSL-SETUP-GUIDE.md) - **NOUVEAU**
 
 ## 🛠️ Installation
 

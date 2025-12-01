@@ -104,6 +104,28 @@ public class SessionService {
     }
     
     /**
+     * Met à jour l'email dans la session après changement d'email
+     */
+    public void updateSessionEmail(String oldEmail, String newEmail) {
+        try {
+            // Charger les détails du nouvel utilisateur
+            UserDetails newUserDetails = userDetailsService.loadUserByUsername(newEmail);
+            
+            // Créer un nouveau token d'authentification avec le nouvel email
+            UsernamePasswordAuthenticationToken newAuthToken = 
+                new UsernamePasswordAuthenticationToken(newUserDetails, null, newUserDetails.getAuthorities());
+            
+            // Mettre à jour le SecurityContext
+            SecurityContextHolder.getContext().setAuthentication(newAuthToken);
+            
+            System.out.println("✅ Session mise à jour: " + oldEmail + " -> " + newEmail);
+            
+        } catch (Exception e) {
+            System.err.println("❌ Erreur mise à jour session: " + e.getMessage());
+        }
+    }
+    
+    /**
      * Récupère les informations de session
      */
     public String getSessionInfo(HttpServletRequest request) {
