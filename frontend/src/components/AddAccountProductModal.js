@@ -92,7 +92,7 @@ const AddAccountProductModal = ({ isOpen, onClose, onSuccess }) => {
         password: formData.password
       };
 
-      const response = await fetch('https://localhost:8443/api/accounts/add', {
+      const response = await fetch('https://localhost:8080/api/accounts/add', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',

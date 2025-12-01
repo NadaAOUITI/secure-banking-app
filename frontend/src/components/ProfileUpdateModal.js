@@ -42,7 +42,7 @@ const ProfileUpdateModal = ({ isOpen, onClose, updateType, onSuccess }) => {
                 updateData.newCountry = formData.newCountry;
             }
             
-            const response = await fetch('https://localhost:8443/api/profile/update', {
+            const response = await fetch('https://localhost:8080/api/profile/update', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
@@ -78,7 +78,7 @@ const ProfileUpdateModal = ({ isOpen, onClose, updateType, onSuccess }) => {
     const confirmEmailChange = async () => {
         setLoading(true);
         try {
-            const response = await fetch('https://localhost:8443/api/profile/confirm-email', {
+            const response = await fetch('https://localhost:8080/api/profile/confirm-email', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
