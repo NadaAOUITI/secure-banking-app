@@ -75,8 +75,8 @@ secure-banking-app/
 ### 🔄 **Tâches En Cours**
 
 #### 4. Fund Transfers
-- [ ] Implement transfer to a beneficiary with OTP confirmation
-- [ ] Implement transfer history logging
+- ✅ Implement transfer to a beneficiary with OTP confirmation
+- ✅ Implement transfer history logging
 - [ ] Send confirmation email for every transfer
 - ✅ **Validate input to prevent SQL/command injection** *(Déjà implémenté globalement : ValidationInterceptor + InputSanitizer + ValidationService + JPA/Hibernate requêtes paramétrées)*
 
