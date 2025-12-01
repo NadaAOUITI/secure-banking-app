@@ -10,7 +10,7 @@ const OtpVerificationModal = ({ isOpen, onClose, onSuccess }) => {
     const initiateUpdate = async () => {
         setLoading(true);
         try {
-            const response = await fetch('https://localhost:8080/api/profile/initiate-update', {
+            const response = await fetch('https://localhost:8443/api/profile/initiate-update', {
                 method: 'POST',
                 credentials: 'include'
             });
@@ -30,7 +30,7 @@ const OtpVerificationModal = ({ isOpen, onClose, onSuccess }) => {
     const verifyOtp = async () => {
         setLoading(true);
         try {
-            const response = await fetch('https://localhost:8080/api/profile/update', {
+            const response = await fetch('https://localhost:8443/api/profile/update', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',

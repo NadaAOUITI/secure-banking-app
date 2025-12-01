@@ -18,7 +18,7 @@ function App() {
 
   const checkExistingSession = async () => {
     try {
-      const response = await fetch('https://localhost:8080/api/account/details', {
+      const response = await fetch('https://localhost:8443/api/account/details', {
         method: 'GET',
         credentials: 'include'
       });

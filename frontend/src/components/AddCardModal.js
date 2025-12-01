@@ -57,7 +57,7 @@ const AddCardModal = ({ isOpen, onClose, onSuccess, accounts }) => {
     setLoading(true);
     
     try {
-      const response = await fetch('https://localhost:8080/api/cards/add', {
+      const response = await fetch('https://localhost:8443/api/cards/add', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',

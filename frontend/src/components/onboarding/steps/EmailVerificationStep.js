@@ -16,7 +16,7 @@ const EmailVerificationStep = ({ data, onNext, onBack, allData }) => {
 
   const sendVerificationCode = async () => {
     try {
-      const response = await fetch('https://localhost:8080/api/onboarding/send-verification', {
+      const response = await fetch('https://localhost:8443/api/onboarding/send-verification', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

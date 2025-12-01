@@ -165,7 +165,7 @@ export const validateAmount = (amount, minAmount = 0, maxAmount = Number.MAX_SAF
 
 export const checkEmailExists = async (email) => {
   try {
-    const response = await fetch(`https://localhost:8080/api/auth/check-email?email=${encodeURIComponent(email)}`);
+    const response = await fetch(`https://localhost:8443/api/auth/check-email?email=${encodeURIComponent(email)}`);
     const data = await response.json();
     return data.exists;
   } catch (error) {
