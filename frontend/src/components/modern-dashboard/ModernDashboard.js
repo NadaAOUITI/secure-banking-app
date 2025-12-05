@@ -6,11 +6,12 @@ import RequestsView from "./components/RequestsView";
 import ProfileView from "./components/ProfileView";
 import BeneficiaryManagement from "../dashboard/BeneficiaryManagement";
 import TransferManagement from "../dashboard/TransferManagement";
+import TransactionManagement from "../dashboard/TransactionManagement";
 import "./ModernDashboard.css";
 
 const ModernDashboard = ({ user, accounts = [], onLogout, onNavigateToBeneficiaries, onNavigateToTransfers }) => {
   const [activeTab, setActiveTab] = useState("accounts");
-  const [activeView, setActiveView] = useState("dashboard"); // 'dashboard', 'beneficiaries', 'transfers'
+  const [activeView, setActiveView] = useState("dashboard"); // 'dashboard', 'beneficiaries', 'transfers', 'transactions'
   const [notification, setNotification] = useState(null);
 
   const showNotification = (message, type = "success", duration = 3000) => {
@@ -33,6 +34,17 @@ const ModernDashboard = ({ user, accounts = [], onLogout, onNavigateToBeneficiar
     );
   }
 
+  // Si on affiche les transactions
+  if (activeView === "transactions") {
+    return (
+        <TransactionManagement
+            onClose={() => setActiveView("dashboard")}
+            accounts={accounts}
+            user={user}
+        />
+    );
+  }
+
   const renderActiveView = () => {
     switch (activeTab) {
       case "accounts":
@@ -41,6 +53,7 @@ const ModernDashboard = ({ user, accounts = [], onLogout, onNavigateToBeneficiar
                 user={user}
                 onManageBeneficiaries={() => setActiveView("beneficiaries")}
                 onMakeTransfer={() => setActiveView("transfers")}
+                onViewTransactions={() => setActiveView("transactions")}
             />
         );
       case "cards":
@@ -55,6 +68,7 @@ const ModernDashboard = ({ user, accounts = [], onLogout, onNavigateToBeneficiar
                 user={user}
                 onManageBeneficiaries={() => setActiveView("beneficiaries")}
                 onMakeTransfer={() => setActiveView("transfers")}
+                onViewTransactions={() => setActiveView("transactions")}
             />
         );
     }
@@ -110,6 +124,16 @@ const ModernDashboard = ({ user, accounts = [], onLogout, onNavigateToBeneficiar
               <span className="action-text">Bénéficiaires</span>
             </button>
 
+            {/* Transactions */}
+            <button
+                className="quick-action-btn transactions"
+                onClick={() => setActiveView("transactions")}
+                title="Voir toutes les transactions"
+            >
+              <span className="action-icon">📋</span>
+              <span className="action-text">Transactions</span>
+            </button>
+
             {/* Historique */}
             <button
                 className="quick-action-btn history"
@@ -138,7 +162,7 @@ const ModernDashboard = ({ user, accounts = [], onLogout, onNavigateToBeneficiar
         {/* Notification Toast */}
         {notification && (
             <div className={`notification notification-${notification.type}`}>
-              {notification. message}
+              {notification.message}
             </div>
         )}
       </div>

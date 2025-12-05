@@ -21,4 +21,6 @@ public interface BankAccountRepository extends JpaRepository<BankAccount, Long> 
     
     @Query("SELECT COUNT(c) FROM BankCard c WHERE c.account.id = :accountId AND c.isActive = true")
     long countActiveCardsByAccountId(@Param("accountId") Long accountId);
+    // ✅ AJOUT : Méthode pour récupérer tous les comptes d'un utilisateur par son ID
+    List<BankAccount> findByUserId(Long userId);
 }

@@ -1,43 +1,30 @@
-package com.securebank.model;
+package com.securebank.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.*;
 import java.math.BigDecimal;
-import java.time. LocalDateTime;
+import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "transactions")
-public class Transaction {
+public class TransactionDTO {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "account_id", nullable = false)
-    @JsonIgnore
-    private BankAccount account;
-
-    @Column(nullable = false)
-    private String type; // "credit" ou "debit"
-
-    @Column(nullable = false, precision = 19, scale = 2)
+    private Long accountId;
+    private String type;
     private BigDecimal amount;
-
-    @Column(nullable = false, length = 500)
     private String description;
-
-    @Column(length = 100)
     private String reference;
-
-    @Column(nullable = false)
     private LocalDateTime date;
 
-    @PrePersist
-    protected void onCreate() {
-        if (date == null) {
-            date = LocalDateTime.now();
-        }
+    // Constructeurs
+    public TransactionDTO() {}
+
+    public TransactionDTO(Long id, Long accountId, String type, BigDecimal amount,
+                          String description, String reference, LocalDateTime date) {
+        this.id = id;
+        this.accountId = accountId;
+        this.type = type;
+        this.amount = amount;
+        this.description = description;
+        this.reference = reference;
+        this.date = date;
     }
 
     // Getters et Setters
@@ -49,12 +36,12 @@ public class Transaction {
         this.id = id;
     }
 
-    public BankAccount getAccount() {
-        return account;
+    public Long getAccountId() {
+        return accountId;
     }
 
-    public void setAccount(BankAccount account) {
-        this.account = account;
+    public void setAccountId(Long accountId) {
+        this.accountId = accountId;
     }
 
     public String getType() {
