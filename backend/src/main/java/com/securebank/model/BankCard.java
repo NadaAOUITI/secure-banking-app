@@ -45,10 +45,10 @@ public class BankCard {
     // ===== NOUVEAUX CHAMPS POUR LA SÉCURITÉ =====
 
     @Column(name = "failed_pin_attempts")
-    private int failedPinAttempts = 0;
+    private Integer failedPinAttempts = 0;
 
     @Column(name = "max_pin_attempts")
-    private int maxPinAttempts = 3;
+    private Integer maxPinAttempts = 3;
 
     @Column(name = "blocked_at")
     private LocalDateTime blockedAt;
@@ -63,10 +63,10 @@ public class BankCard {
     private BigDecimal dailyTransactionLimit;
 
     @Column(name = "max_daily_transactions")
-    private int maxDailyTransactions = 10;
+    private Integer maxDailyTransactions = 10;
 
     @Column(name = "daily_transaction_count")
-    private int dailyTransactionCount = 0;
+    private Integer dailyTransactionCount = 0;
 
     @Column(name = "daily_transaction_total")
     private BigDecimal dailyTransactionTotal = BigDecimal. ZERO;
@@ -188,11 +188,11 @@ public class BankCard {
     public boolean isBlocked() { return isBlocked; }
     public void setBlocked(boolean blocked) { isBlocked = blocked; }
 
-    public int getFailedPinAttempts() { return failedPinAttempts; }
-    public void setFailedPinAttempts(int failedPinAttempts) { this. failedPinAttempts = failedPinAttempts; }
+    public Integer getFailedPinAttempts() { return failedPinAttempts; }
+    public void setFailedPinAttempts(Integer failedPinAttempts) { this.failedPinAttempts = failedPinAttempts; }
 
-    public int getMaxPinAttempts() { return maxPinAttempts; }
-    public void setMaxPinAttempts(int maxPinAttempts) { this.maxPinAttempts = maxPinAttempts; }
+    public Integer getMaxPinAttempts() { return maxPinAttempts; }
+    public void setMaxPinAttempts(Integer maxPinAttempts) { this.maxPinAttempts = maxPinAttempts; }
 
     public LocalDateTime getBlockedAt() { return blockedAt; }
     public void setBlockedAt(LocalDateTime blockedAt) { this.blockedAt = blockedAt; }
@@ -206,11 +206,11 @@ public class BankCard {
     public BigDecimal getDailyTransactionLimit() { return dailyTransactionLimit; }
     public void setDailyTransactionLimit(BigDecimal dailyTransactionLimit) { this. dailyTransactionLimit = dailyTransactionLimit; }
 
-    public int getMaxDailyTransactions() { return maxDailyTransactions; }
-    public void setMaxDailyTransactions(int maxDailyTransactions) { this. maxDailyTransactions = maxDailyTransactions; }
+    public Integer getMaxDailyTransactions() { return maxDailyTransactions; }
+    public void setMaxDailyTransactions(Integer maxDailyTransactions) { this.maxDailyTransactions = maxDailyTransactions; }
 
-    public int getDailyTransactionCount() { return dailyTransactionCount; }
-    public void setDailyTransactionCount(int dailyTransactionCount) { this.dailyTransactionCount = dailyTransactionCount; }
+    public Integer getDailyTransactionCount() { return dailyTransactionCount; }
+    public void setDailyTransactionCount(Integer dailyTransactionCount) { this.dailyTransactionCount = dailyTransactionCount; }
 
     public BigDecimal getDailyTransactionTotal() { return dailyTransactionTotal; }
     public void setDailyTransactionTotal(BigDecimal dailyTransactionTotal) { this. dailyTransactionTotal = dailyTransactionTotal; }
