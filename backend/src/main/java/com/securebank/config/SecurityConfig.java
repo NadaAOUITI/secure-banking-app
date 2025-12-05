@@ -43,6 +43,12 @@ public class SecurityConfig {
                 .requestMatchers("/api/account/**").authenticated()
                 .requestMatchers("/api/accounts/**").authenticated()
                 .requestMatchers("/api/profile/**").authenticated()
+
+                     // ✅ NOUVEAUX endpoints à ajouter
+                       .requestMatchers("/api/cards/**").authenticated()
+                       .requestMatchers("/api/otp/**").authenticated()
+                    .requestMatchers("/api/transaction/**").authenticated()
+                    .requestMatchers("/api/session/**").authenticated()
                 .anyRequest().authenticated()
             );
         
