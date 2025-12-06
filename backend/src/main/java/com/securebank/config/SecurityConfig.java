@@ -49,6 +49,8 @@ public class SecurityConfig {
                        .requestMatchers("/api/otp/**").authenticated()
                     .requestMatchers("/api/transaction/**").authenticated()
                     .requestMatchers("/api/session/**").authenticated()
+
+
                 .anyRequest().authenticated()
             );
         

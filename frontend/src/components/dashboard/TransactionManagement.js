@@ -42,8 +42,8 @@ const TransactionManagement = ({ onClose, user }) => {
 
     // ✅ États pour le flux sécurisé PIN + OTP
     const [transactionStep, setTransactionStep] = useState(1);
-    // 1: Formulaire, 2: PIN, 3: OTP, 4: Succès
     const [pinVerified, setPinVerified] = useState(false);
+    const [verifiedPin, setVerifiedPin] = useState("");  // ✅ NOUVEAU: Stocker le PIN vérifié
     const [otpSent, setOtpSent] = useState(false);
     const [remainingAttempts, setRemainingAttempts] = useState(3);
     const [cardBlocked, setCardBlocked] = useState(false);
@@ -65,7 +65,7 @@ const TransactionManagement = ({ onClose, user }) => {
     }, [transactions, selectedAccount, filterType, searchTerm, dateRange]);
 
     useEffect(() => {
-        if (accounts.length > 0 && !transactionForm.accountId) {
+        if (accounts.length > 0 && ! transactionForm.accountId) {
             setTransactionForm(prev => ({ ...prev, accountId: accounts[0].id. toString() }));
         }
     }, [accounts]);
@@ -87,7 +87,7 @@ const TransactionManagement = ({ onClose, user }) => {
     // Focus automatique sur les inputs
     useEffect(() => {
         if (transactionStep === 2 && pinInputRef.current) {
-            pinInputRef. current.focus();
+            pinInputRef.current.focus();
         }
         if (transactionStep === 3 && otpInputRef. current) {
             otpInputRef. current.focus();
@@ -126,7 +126,7 @@ const TransactionManagement = ({ onClose, user }) => {
             }
 
         } catch (err) {
-            console.error("Erreur chargement:", err);
+            console. error("Erreur chargement:", err);
             setError(err.message);
         } finally {
             setLoading(false);
@@ -183,7 +183,7 @@ const TransactionManagement = ({ onClose, user }) => {
 
         // Vérifier le solde pour les débits
         if (transactionForm.type === "debit") {
-            const account = accounts.find(a => a.id === parseInt(transactionForm.accountId));
+            const account = accounts.find(a => a.id === parseInt(transactionForm. accountId));
             if (account && parseFloat(transactionForm.amount) > account.balance) {
                 setTransactionError(`Solde insuffisant.  Disponible: ${account. balance. toFixed(2)} MAD`);
                 return false;
@@ -201,7 +201,7 @@ const TransactionManagement = ({ onClose, user }) => {
 
         // Vérifier le statut de la carte
         try {
-            const cardStatus = await transactionService.getCardStatus(transactionForm. cardId);
+            const cardStatus = await transactionService.getCardStatus(transactionForm.cardId);
             if (cardStatus.blocked) {
                 setTransactionError(`Carte bloquée: ${cardStatus.blockReason || "Raison inconnue"}`);
                 return;
@@ -211,7 +211,8 @@ const TransactionManagement = ({ onClose, user }) => {
                 return;
             }
         } catch (err) {
-            console.error("Erreur statut carte:", err);
+            console. error("Erreur statut carte:", err);
+            // Continuer même si on ne peut pas vérifier le statut
         }
 
         setTransactionStep(2);
@@ -237,17 +238,19 @@ const TransactionManagement = ({ onClose, user }) => {
             );
 
             if (result.success) {
-                // PIN valide -> Envoyer l'OTP
+                // ✅ PIN valide -> Stocker le PIN vérifié
                 setPinVerified(true);
+                setVerifiedPin(transactionForm.pin);  // ✅ IMPORTANT: Stocker le PIN
 
                 // Envoyer l'OTP
                 const otpResult = await transactionService.sendOtp(userEmail);
 
                 if (otpResult.success) {
                     setOtpSent(true);
-                    setOtpCooldown(60); // 60 secondes avant de pouvoir renvoyer
+                    setOtpCooldown(60);
                     setTransactionStep(3);
-                    setTransactionForm(prev => ({ ...prev, pin: "" })); // Effacer le PIN
+                    // ✅ Effacer le PIN du formulaire (pour sécurité visuelle)
+                    setTransactionForm(prev => ({ ...prev, pin: "" }));
                 } else {
                     setTransactionError(otpResult.message || "Erreur lors de l'envoi du code OTP");
                 }
@@ -275,8 +278,15 @@ const TransactionManagement = ({ onClose, user }) => {
     const handleOtpSubmit = async (e) => {
         e.preventDefault();
 
-        if (! transactionForm.otpCode || transactionForm.otpCode. length !== 6) {
+        if (!transactionForm.otpCode || transactionForm.otpCode. length !== 6) {
             setTransactionError("Le code OTP doit contenir 6 chiffres");
+            return;
+        }
+
+        // ✅ Vérifier que le PIN a été stocké
+        if (! verifiedPin) {
+            setTransactionError("Erreur: PIN non vérifié.  Veuillez recommencer.");
+            setTransactionStep(2);
             return;
         }
 
@@ -285,7 +295,7 @@ const TransactionManagement = ({ onClose, user }) => {
 
         try {
             // Vérifier l'OTP
-            const otpResult = await transactionService. verifyOtp(userEmail, transactionForm.otpCode);
+            const otpResult = await transactionService.verifyOtp(userEmail, transactionForm.otpCode);
 
             if (! otpResult.success) {
                 setTransactionError(otpResult.message || "Code OTP invalide ou expiré");
@@ -293,14 +303,14 @@ const TransactionManagement = ({ onClose, user }) => {
                 return;
             }
 
-            // OTP valide -> Exécuter la transaction
+            // ✅ OTP valide -> Exécuter la transaction avec le PIN stocké
             const transactionResult = await transactionService.processSecureTransaction({
                 cardId: parseInt(transactionForm. cardId),
-                pin: transactionForm. pin, // Le PIN a déjà été vérifié mais requis par l'API
+                pin: verifiedPin,  // ✅ IMPORTANT: Utiliser le PIN stocké
                 amount: parseFloat(transactionForm.amount),
                 type: transactionForm. type,
                 description: transactionForm. description. trim(),
-                reference: transactionForm. reference.trim() || null
+                reference: transactionForm. reference. trim() || null
             });
 
             if (transactionResult. success) {
@@ -311,10 +321,14 @@ const TransactionManagement = ({ onClose, user }) => {
                     referenceNumber: transactionResult.referenceNumber,
                     amount: transactionResult. amount,
                     type: transactionForm.type,
-                    transactionDate: transactionResult.transactionDate,
-                    remainingDailyLimit: transactionResult. remainingDailyLimit,
+                    newBalance: transactionResult.newBalance,
+                    transactionDate: transactionResult. transactionDate,
+                    remainingDailyLimit: transactionResult.remainingDailyLimit,
                     remainingDailyTransactions: transactionResult.remainingDailyTransactions
                 });
+
+                // ✅ Effacer le PIN stocké après succès
+                setVerifiedPin("");
 
                 // Rafraîchir les données
                 await loadInitialData();
@@ -349,12 +363,16 @@ const TransactionManagement = ({ onClose, user }) => {
                     setTransactionStep(1);
                 } else {
                     setTransactionError(`PIN incorrect. ${result. remainingAttempts} tentative(s) restante(s)`);
+                    // Retourner à l'étape PIN
+                    setTransactionStep(2);
+                    setVerifiedPin("");
                 }
                 break;
             case 'CARD_BLOCKED':
                 setCardBlocked(true);
                 setTransactionError(`🔒 Carte bloquée: ${result.reason || "Raison inconnue"}`);
                 setTransactionStep(1);
+                setVerifiedPin("");
                 break;
             case 'LIMIT_EXCEEDED':
                 setTransactionError(`Limite dépassée: ${result.message}`);
@@ -393,7 +411,7 @@ const TransactionManagement = ({ onClose, user }) => {
     // Réinitialiser le formulaire
     const resetForm = () => {
         setTransactionForm({
-            accountId: accounts. length > 0 ?  accounts[0].id. toString() : "",
+            accountId: accounts. length > 0 ?  accounts[0].id.toString() : "",
             cardId: "",
             type: "debit",
             amount: "",
@@ -406,6 +424,7 @@ const TransactionManagement = ({ onClose, user }) => {
         setTransactionError(null);
         setTransactionSuccess(null);
         setPinVerified(false);
+        setVerifiedPin("");  // ✅ Réinitialiser le PIN stocké
         setOtpSent(false);
         setCardBlocked(false);
         setOtpCooldown(0);
@@ -422,6 +441,7 @@ const TransactionManagement = ({ onClose, user }) => {
             const card = cards.find(c => c.id === parseInt(value));
             setSelectedCard(card);
             setPinVerified(false);
+            setVerifiedPin("");  // ✅ Réinitialiser le PIN si on change de carte
             setTransactionForm(prev => ({ ... prev, pin: "", otpCode: "" }));
         }
     };
@@ -432,7 +452,7 @@ const TransactionManagement = ({ onClose, user }) => {
         let filtered = [... transactions];
 
         if (selectedAccount !== "all") {
-            filtered = filtered. filter(t => t.accountId === parseInt(selectedAccount));
+            filtered = filtered.filter(t => t.accountId === parseInt(selectedAccount));
         }
         if (filterType !== "all") {
             filtered = filtered.filter(t => t.type?. toLowerCase() === filterType.toLowerCase());
@@ -441,10 +461,10 @@ const TransactionManagement = ({ onClose, user }) => {
             const searchLower = searchTerm.toLowerCase();
             filtered = filtered. filter(t =>
                 t.description?. toLowerCase().includes(searchLower) ||
-                t.reference?.toLowerCase().includes(searchLower)
+                t.reference?. toLowerCase().includes(searchLower)
             );
         }
-        if (dateRange. start) {
+        if (dateRange.start) {
             filtered = filtered.filter(t => new Date(t.date) >= new Date(dateRange.start));
         }
         if (dateRange. end) {
@@ -471,7 +491,7 @@ const TransactionManagement = ({ onClose, user }) => {
 
     const formatDate = (dateString) => {
         try {
-            return new Date(dateString). toLocaleDateString("fr-FR", {
+            return new Date(dateString).toLocaleDateString("fr-FR", {
                 day: "2-digit", month: "short", year: "numeric",
                 hour: "2-digit", minute: "2-digit"
             });
@@ -488,7 +508,10 @@ const TransactionManagement = ({ onClose, user }) => {
             'VISA': '💳 Visa',
             'MASTERCARD': '💳 Mastercard',
             'VISA_GOLD': '🌟 Visa Gold',
-            'MASTERCARD_PLATINUM': '💎 Mastercard Platinum'
+            'MASTERCARD_PLATINUM': '💎 Mastercard Platinum',
+            'CLASSIC': '💳 Classique',
+            'GOLD': '🌟 Gold',
+            'PLATINUM': '💎 Platinum'
         };
         return types[type] || `💳 ${type}`;
     };
@@ -616,7 +639,7 @@ const TransactionManagement = ({ onClose, user }) => {
                                 <span className="step-label">Détails</span>
                             </div>
                             <div className="step-line"></div>
-                            <div className={`step ${transactionStep >= 2 ? 'active' : ''} ${transactionStep > 2 ? 'completed' : ''}`}>
+                            <div className={`step ${transactionStep >= 2 ? 'active' : ''} ${transactionStep > 2 ?  'completed' : ''}`}>
                                 <span className="step-number">{transactionStep > 2 ? '✓' : '2'}</span>
                                 <span className="step-label">Code PIN</span>
                             </div>
@@ -645,7 +668,7 @@ const TransactionManagement = ({ onClose, user }) => {
                                 <div className="form-row">
                                     <div className="form-group">
                                         <label htmlFor="accountId">🏦 Compte</label>
-                                        {accountsLoading ?  (
+                                        {accountsLoading ? (
                                             <div className="loading-text">Chargement...</div>
                                         ) : accounts.length === 0 ? (
                                             <div className="warning-text">Aucun compte disponible</div>
@@ -677,14 +700,14 @@ const TransactionManagement = ({ onClose, user }) => {
                                             <select
                                                 id="cardId"
                                                 name="cardId"
-                                                value={transactionForm.cardId}
+                                                value={transactionForm. cardId}
                                                 onChange={handleInputChange}
                                                 className="form-select"
                                             >
                                                 <option value="">Sélectionner une carte</option>
                                                 {cards.map(card => (
-                                                    <option key={card. id} value={card.id}>
-                                                        {formatCardType(card. cardType)}
+                                                    <option key={card.id} value={card. id}>
+                                                        {formatCardType(card. cardType)} - #{card.id}
                                                     </option>
                                                 ))}
                                             </select>
@@ -699,7 +722,7 @@ const TransactionManagement = ({ onClose, user }) => {
                                             <button
                                                 type="button"
                                                 className={`type-btn debit ${transactionForm.type === 'debit' ?  'active' : ''}`}
-                                                onClick={() => setTransactionForm(prev => ({ ... prev, type: 'debit' }))}
+                                                onClick={() => setTransactionForm(prev => ({ ...prev, type: 'debit' }))}
                                             >
                                                 💸 Débit (Retrait)
                                             </button>
@@ -775,7 +798,7 @@ const TransactionManagement = ({ onClose, user }) => {
                                             </span>
                                             <span className="preview-amount">
                                                 {transactionForm.type === 'credit' ? '+' : '-'}
-                                                {parseFloat(transactionForm.amount).toFixed(2)} MAD
+                                                {parseFloat(transactionForm.amount). toFixed(2)} MAD
                                             </span>
                                         </div>
                                     </div>
@@ -831,7 +854,10 @@ const TransactionManagement = ({ onClose, user }) => {
                                     <div className="form-actions">
                                         <button
                                             type="button"
-                                            onClick={() => { setTransactionStep(1); setTransactionForm(prev => ({ ...prev, pin: "" })); }}
+                                            onClick={() => {
+                                                setTransactionStep(1);
+                                                setTransactionForm(prev => ({ ...prev, pin: "" }));
+                                            }}
                                             className="action-btn secondary"
                                             disabled={transactionLoading}
                                         >
@@ -889,7 +915,7 @@ const TransactionManagement = ({ onClose, user }) => {
                                     </div>
 
                                     <div className="resend-otp">
-                                        {otpCooldown > 0 ? (
+                                        {otpCooldown > 0 ?  (
                                             <span className="cooldown">
                                                 Renvoyer le code dans {otpCooldown}s
                                             </span>
@@ -952,13 +978,19 @@ const TransactionManagement = ({ onClose, user }) => {
                                             {transactionSuccess.amount?. toFixed(2)} MAD
                                         </strong>
                                     </div>
-                                    {transactionSuccess.remainingDailyLimit && (
+                                    {transactionSuccess.newBalance !== undefined && (
                                         <div className="detail-row">
-                                            <span>Limite journalière restante:</span>
-                                            <strong>{transactionSuccess.remainingDailyLimit?. toFixed(2)} MAD</strong>
+                                            <span>Nouveau solde:</span>
+                                            <strong>{transactionSuccess.newBalance?.toFixed(2)} MAD</strong>
                                         </div>
                                     )}
-                                    {transactionSuccess.remainingDailyTransactions && (
+                                    {transactionSuccess. remainingDailyLimit && (
+                                        <div className="detail-row">
+                                            <span>Limite journalière restante:</span>
+                                            <strong>{transactionSuccess. remainingDailyLimit?.toFixed(2)} MAD</strong>
+                                        </div>
+                                    )}
+                                    {transactionSuccess. remainingDailyTransactions !== undefined && (
                                         <div className="detail-row">
                                             <span>Transactions restantes:</span>
                                             <strong>{transactionSuccess. remainingDailyTransactions}</strong>
@@ -969,6 +1001,16 @@ const TransactionManagement = ({ onClose, user }) => {
                                 <p className="email-notice">
                                     📧 Un email de confirmation a été envoyé à votre adresse
                                 </p>
+
+                                <button
+                                    className="action-btn success"
+                                    onClick={() => {
+                                        resetForm();
+                                        setShowTransactionForm(false);
+                                    }}
+                                >
+                                    ✓ Fermer
+                                </button>
                             </div>
                         )}
                     </div>
@@ -981,7 +1023,7 @@ const TransactionManagement = ({ onClose, user }) => {
                     <div className="summary-icon">💰</div>
                     <div className="summary-details">
                         <span className="summary-label">Total Crédits</span>
-                        <span className="summary-amount">+{totals.credit. toFixed(2)} MAD</span>
+                        <span className="summary-amount">+{totals.credit.toFixed(2)} MAD</span>
                         <span className="summary-count">
                             {filteredTransactions.filter(t => t. type?. toLowerCase() === "credit").length} transaction(s)
                         </span>
@@ -1002,7 +1044,7 @@ const TransactionManagement = ({ onClose, user }) => {
                     <div className="summary-details">
                         <span className="summary-label">Solde Net</span>
                         <span className={`summary-amount ${totals.balance >= 0 ? "positive" : "negative"}`}>
-                            {totals. balance >= 0 ? "+" : ""}{totals.balance.toFixed(2)} MAD
+                            {totals. balance >= 0 ? "+" : ""}{totals.balance. toFixed(2)} MAD
                         </span>
                         <span className="summary-count">
                             {filteredTransactions.length} transaction(s)
@@ -1021,9 +1063,9 @@ const TransactionManagement = ({ onClose, user }) => {
                         className="filter-select"
                     >
                         <option value="all">Tous les comptes</option>
-                        {accounts. map(acc => (
-                            <option key={acc.id} value={acc.id}>
-                                {acc. accountNumber} - {acc.balance?.toFixed(2)} MAD
+                        {accounts.map(acc => (
+                            <option key={acc. id} value={acc.id}>
+                                {acc.accountNumber} - {acc.balance?.toFixed(2)} MAD
                             </option>
                         ))}
                     </select>
@@ -1057,7 +1099,7 @@ const TransactionManagement = ({ onClose, user }) => {
                     <label>📅 Du</label>
                     <input
                         type="date"
-                        value={dateRange.start}
+                        value={dateRange. start}
                         onChange={(e) => setDateRange({ ...dateRange, start: e.target. value })}
                         className="filter-input"
                     />
@@ -1087,7 +1129,7 @@ const TransactionManagement = ({ onClose, user }) => {
                     <div className="empty-state">
                         <div className="empty-icon">🔍</div>
                         <h3>Aucune transaction trouvée</h3>
-                        {transactions.length === 0 ? (
+                        {transactions.length === 0 ?  (
                             <>
                                 <p>Vous n'avez aucune transaction enregistrée</p>
                                 <button
@@ -1123,7 +1165,7 @@ const TransactionManagement = ({ onClose, user }) => {
                                     <td className="description-cell">
                                         <div className="description-content">
                                                 <span className="transaction-icon">
-                                                    {transaction.type?.toLowerCase() === "credit" ? "💰" : "💸"}
+                                                    {transaction.type?. toLowerCase() === "credit" ? "💰" : "💸"}
                                                 </span>
                                             <span>{transaction.description || "Sans description"}</span>
                                         </div>
@@ -1133,12 +1175,12 @@ const TransactionManagement = ({ onClose, user }) => {
                                     </td>
                                     <td className="type-cell">
                                             <span className={`type-badge ${transaction. type?. toLowerCase()}`}>
-                                                {transaction.type?.toLowerCase() === "credit" ?  "Crédit" : "Débit"}
+                                                {transaction.type?.toLowerCase() === "credit" ? "Crédit" : "Débit"}
                                             </span>
                                     </td>
                                     <td className={`amount-cell ${transaction.type?.toLowerCase()}`}>
                                         {transaction.type?.toLowerCase() === "credit" ? "+" : "-"}
-                                        {parseFloat(transaction.amount). toFixed(2)} MAD
+                                        {parseFloat(transaction.amount).toFixed(2)} MAD
                                     </td>
                                     <td className="account-cell">
                                         {accounts.find(a => a.id === transaction.accountId)?.accountNumber || "N/A"}
