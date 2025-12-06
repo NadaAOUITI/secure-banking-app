@@ -1,27 +1,30 @@
-package com.securebank. controller;
+package com.securebank.controller;
 
-import com.securebank. dto.*;
+import com.securebank.dto.*;
 import com.securebank.exception.*;
-import com.securebank.model.BankAccount;
-import com. securebank.model.BankCard;
-import com.securebank.model.User;
-import com. securebank.service.*;
-import com.securebank. repository. BankCardRepository;
-import com.securebank.repository. BankAccountRepository;
+import com.securebank.model. BankAccount;
+import com.securebank.model.BankCard;
+import com.securebank.model.Transaction;
+import com. securebank.model.User;
+import com.securebank.service.*;
+import com.securebank.repository. BankCardRepository;
+import com.securebank. repository.BankAccountRepository;
+import com.securebank. repository.TransactionRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation. Autowired;
-import org.springframework. http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org. springframework.security.core.Authentication;
+import org. springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework. http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context. SecurityContextHolder;
 import org.springframework. security.crypto.password.PasswordEncoder;
-import org.springframework.validation. BindingResult;
-import org.springframework.web. bind.annotation.*;
+import org.springframework.validation.BindingResult;
+import org. springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
-import java. util.Map;
+import java.time.LocalDateTime;
+import java.util. HashMap;
+import java.util.Map;
 import java. util.List;
 import java.util. ArrayList;
 
@@ -37,7 +40,9 @@ public class BankCardController {
     private final CardValidationService cardValidationService;
     private final BankAccountRepository bankAccountRepository;
     private final BankCardRepository cardRepository;
+    private final TransactionRepository transactionRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
 
     @Autowired
     public BankCardController(BankAccountService bankAccountService,
@@ -47,15 +52,19 @@ public class BankCardController {
                               CardValidationService cardValidationService,
                               BankAccountRepository bankAccountRepository,
                               BankCardRepository cardRepository,
-                              PasswordEncoder passwordEncoder) {
-        this. bankAccountService = bankAccountService;
-        this.userService = userService;
-        this.securityAuditService = securityAuditService;
-        this. rateLimitingService = rateLimitingService;
+                              TransactionRepository transactionRepository,
+                              PasswordEncoder passwordEncoder,
+                              EmailService emailService) {
+        this.bankAccountService = bankAccountService;
+        this. userService = userService;
+        this. securityAuditService = securityAuditService;
+        this.rateLimitingService = rateLimitingService;
         this.cardValidationService = cardValidationService;
-        this. bankAccountRepository = bankAccountRepository;
-        this.cardRepository = cardRepository;
+        this.bankAccountRepository = bankAccountRepository;
+        this. cardRepository = cardRepository;
+        this. transactionRepository = transactionRepository;
         this.passwordEncoder = passwordEncoder;
+        this.emailService = emailService;
     }
 
     // ==================== ENDPOINTS DE RÉCUPÉRATION ====================
@@ -67,9 +76,9 @@ public class BankCardController {
         try {
             User user = getAuthenticatedUser();
             if (user == null) {
-                response. put("success", false);
+                response.put("success", false);
                 response.put("message", "Session expirée");
-                return ResponseEntity.status(401).body(response);
+                return ResponseEntity.status(401). body(response);
             }
 
             List<BankCard> allUserCards = new ArrayList<>();
@@ -85,7 +94,7 @@ public class BankCardController {
                 Map<String, Object> cardInfo = new HashMap<>();
                 cardInfo.put("id", card.getId());
                 cardInfo. put("accountId", card.getAccount().getId());
-                cardInfo.put("cardType", card. getCardType().name());
+                cardInfo.put("cardType", card. getCardType(). name());
                 cardInfo.put("isActive", card.isActive());
                 cardInfo.put("createdAt", card. getCreatedAt(). toString());
                 cardDetails.add(cardInfo);
@@ -94,7 +103,7 @@ public class BankCardController {
             response.put("success", true);
             response.put("totalCards", allUserCards.size());
             response.put("cards", cardDetails);
-            response.put("totalAccounts", accounts. size());
+            response.put("totalAccounts", accounts.size());
 
             return ResponseEntity.ok(response);
 
@@ -117,7 +126,7 @@ public class BankCardController {
                 return ResponseEntity.status(401).body(response);
             }
 
-            List<BankAccount> accounts = bankAccountRepository.findByUserAndIsActiveTrue(user);
+            List<BankAccount> accounts = bankAccountRepository. findByUserAndIsActiveTrue(user);
             List<Map<String, Object>> allCards = new ArrayList<>();
 
             for (BankAccount account : accounts) {
@@ -129,7 +138,7 @@ public class BankCardController {
                     cardInfo.put("accountId", account.getId());
                     cardInfo.put("accountNumber", account.getAccountNumber());
                     cardInfo.put("cardType", card.getCardType().name());
-                    cardInfo.put("createdAt", card. getCreatedAt());
+                    cardInfo. put("createdAt", card. getCreatedAt());
                     cardInfo.put("isActive", card.isActive());
                     cardInfo.put("isBlocked", card.isBlocked());
                     allCards.add(cardInfo);
@@ -140,7 +149,7 @@ public class BankCardController {
             response.put("cards", allCards);
             response.put("totalCards", allCards.size());
 
-            return ResponseEntity.ok(response);
+            return ResponseEntity. ok(response);
 
         } catch (Exception e) {
             response.put("success", false);
@@ -151,9 +160,6 @@ public class BankCardController {
 
     // ==================== ENDPOINTS DE SÉCURITÉ ====================
 
-    /**
-     * Vérifier le code PIN
-     */
     @PostMapping("/verify-pin")
     public ResponseEntity<Map<String, Object>> verifyPin(
             @Valid @RequestBody PinVerificationRequest request) {
@@ -168,33 +174,28 @@ public class BankCardController {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED). body(response);
             }
 
-            // Récupérer la carte
-            BankCard card = cardRepository.findById(request.getCardId())
-                    .orElse(null);
+            BankCard card = cardRepository. findById(request. getCardId()). orElse(null);
 
             if (card == null) {
                 response.put("success", false);
                 response.put("message", "Carte non trouvée");
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+                return ResponseEntity. status(HttpStatus. NOT_FOUND). body(response);
             }
 
-            // Vérifier que la carte appartient à l'utilisateur
-            if (! card.getAccount(). getUser().getId().equals(user. getId())) {
+            if (! card.getAccount().getUser().getId().equals(user. getId())) {
                 response.put("success", false);
                 response.put("message", "Carte non autorisée");
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
             }
 
-            // Vérifier si la carte est bloquée
             if (card.isBlocked()) {
-                response. put("success", false);
-                response. put("message", "Carte bloquée: " + card.getBlockReason());
+                response.put("success", false);
+                response.put("message", "Carte bloquée: " + card.getBlockReason());
                 response.put("cardBlocked", true);
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
+                return ResponseEntity. status(HttpStatus. FORBIDDEN).body(response);
             }
 
-            // Vérifier le PIN
-            if (!passwordEncoder.matches(request.getPin(), card.getPinHash())) {
+            if (! passwordEncoder.matches(request.getPin(), card.getPinHash())) {
                 boolean shouldBlock = card.incrementFailedAttempts();
 
                 if (shouldBlock) {
@@ -207,28 +208,24 @@ public class BankCardController {
                 response.put("remainingAttempts", card.getRemainingAttempts());
                 response.put("cardBlocked", shouldBlock);
 
-                return ResponseEntity. status(shouldBlock ? HttpStatus. FORBIDDEN : HttpStatus.UNAUTHORIZED).body(response);
+                return ResponseEntity. status(shouldBlock ? HttpStatus. FORBIDDEN : HttpStatus. UNAUTHORIZED).body(response);
             }
 
-            // PIN correct
-            card. resetFailedAttempts();
+            card.resetFailedAttempts();
             cardRepository.save(card);
 
-            response. put("success", true);
-            response. put("message", "Code PIN valide");
+            response.put("success", true);
+            response.put("message", "Code PIN valide");
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
             e.printStackTrace();
             response.put("success", false);
             response.put("message", "Erreur lors de la vérification du PIN: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR). body(response);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
 
-    /**
-     * Obtenir le statut d'une carte
-     */
     @GetMapping("/{cardId}/status")
     public ResponseEntity<Map<String, Object>> getCardStatus(@PathVariable Long cardId) {
 
@@ -237,12 +234,11 @@ public class BankCardController {
         try {
             User user = getAuthenticatedUser();
             if (user == null) {
-                response.put("success", false);
-                response.put("message", "Utilisateur non authentifié");
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED). body(response);
+                response. put("success", false);
+                response. put("message", "Utilisateur non authentifié");
+                return ResponseEntity.status(HttpStatus. UNAUTHORIZED).body(response);
             }
 
-            // Récupérer la carte
             BankCard card = cardRepository.findById(cardId). orElse(null);
 
             if (card == null) {
@@ -251,14 +247,12 @@ public class BankCardController {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
             }
 
-            // Vérifier que la carte appartient à l'utilisateur
             if (!card. getAccount().getUser().getId().equals(user.getId())) {
                 response. put("success", false);
                 response. put("message", "Carte non autorisée");
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
             }
 
-            // Retourner le statut
             response.put("success", true);
             response.put("id", card.getId());
             response.put("cardType", card.getCardType(). name());
@@ -266,9 +260,9 @@ public class BankCardController {
             response. put("blocked", card.isBlocked());
             response.put("blockReason", card. getBlockReason());
             response.put("failedPinAttempts", card.getFailedPinAttempts());
-            response. put("remainingAttempts", card. getRemainingAttempts());
+            response. put("remainingAttempts", card.getRemainingAttempts());
             response.put("singleTransactionLimit", card.getSingleTransactionLimit());
-            response.put("dailyTransactionLimit", card. getDailyTransactionLimit());
+            response.put("dailyTransactionLimit", card.getDailyTransactionLimit());
             response.put("maxDailyTransactions", card.getMaxDailyTransactions());
 
             return ResponseEntity. ok(response);
@@ -277,12 +271,12 @@ public class BankCardController {
             e.printStackTrace();
             response.put("success", false);
             response.put("message", "Erreur lors de la récupération du statut: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus. INTERNAL_SERVER_ERROR).body(response);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
 
     /**
-     * Effectuer une transaction
+     * ✅ Effectuer une transaction avec enregistrement en base et email de confirmation
      */
     @PostMapping("/transaction")
     public ResponseEntity<Map<String, Object>> processTransaction(
@@ -298,8 +292,7 @@ public class BankCardController {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
             }
 
-            // Récupérer la carte
-            BankCard card = cardRepository.findById(request.getCardId()). orElse(null);
+            BankCard card = cardRepository. findById(request. getCardId()).orElse(null);
 
             if (card == null) {
                 response.put("success", false);
@@ -307,15 +300,13 @@ public class BankCardController {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
             }
 
-            // Vérifier que la carte appartient à l'utilisateur
-            if (! card.getAccount(). getUser().getId(). equals(user.getId())) {
+            if (!card.getAccount().getUser(). getId().equals(user.getId())) {
                 response.put("success", false);
                 response.put("message", "Carte non autorisée");
-                return ResponseEntity. status(HttpStatus. FORBIDDEN).body(response);
+                return ResponseEntity.status(HttpStatus.FORBIDDEN). body(response);
             }
 
-            // Vérifier si la carte est bloquée
-            if (card. isBlocked()) {
+            if (card.isBlocked()) {
                 response.put("success", false);
                 response.put("errorType", "CARD_BLOCKED");
                 response.put("message", "Carte bloquée: " + card.getBlockReason());
@@ -340,26 +331,22 @@ public class BankCardController {
                 return ResponseEntity.status(shouldBlock ? HttpStatus. FORBIDDEN : HttpStatus.UNAUTHORIZED).body(response);
             }
 
-            // PIN correct - réinitialiser les tentatives
+            // PIN correct
             card.resetFailedAttempts();
-
-            // Réinitialiser les compteurs journaliers si nécessaire
             card.resetDailyCountersIfNeeded();
 
-            // Vérifier les limites
             BigDecimal amount = request.getAmount();
 
-            // Limite par transaction
+            // Vérifier les limites
             if (card.getSingleTransactionLimit() != null &&
-                    amount.compareTo(card.getSingleTransactionLimit()) > 0) {
-                response.put("success", false);
-                response.put("errorType", "LIMIT_EXCEEDED");
+                    amount. compareTo(card. getSingleTransactionLimit()) > 0) {
+                response. put("success", false);
+                response. put("errorType", "LIMIT_EXCEEDED");
                 response.put("message", "Montant dépasse la limite par transaction: " + card.getSingleTransactionLimit() + " MAD");
                 return ResponseEntity.badRequest().body(response);
             }
 
-            // Nombre de transactions
-            if (card.getMaxDailyTransactions() != null &&
+            if (card. getMaxDailyTransactions() != null &&
                     card.getDailyTransactionCount() >= card.getMaxDailyTransactions()) {
                 response.put("success", false);
                 response.put("errorType", "LIMIT_EXCEEDED");
@@ -367,9 +354,8 @@ public class BankCardController {
                 return ResponseEntity.badRequest(). body(response);
             }
 
-            // Limite journalière
             if (card.getDailyTransactionLimit() != null) {
-                BigDecimal newTotal = card.getDailyTransactionTotal(). add(amount);
+                BigDecimal newTotal = card.getDailyTransactionTotal().add(amount);
                 if (newTotal.compareTo(card.getDailyTransactionLimit()) > 0) {
                     response.put("success", false);
                     response.put("errorType", "LIMIT_EXCEEDED");
@@ -389,53 +375,91 @@ public class BankCardController {
                 }
             }
 
+            // ✅ Stocker l'ancien solde AVANT modification
+            BigDecimal oldBalance = account. getBalance();
+
             // Mettre à jour le solde
             if ("credit".equalsIgnoreCase(request. getType())) {
                 account.setBalance(account.getBalance().add(amount));
             } else {
-                account.setBalance(account.getBalance().subtract(amount));
+                account.setBalance(account.getBalance(). subtract(amount));
             }
 
+            // ✅ Nouveau solde APRÈS modification
+            BigDecimal newBalance = account. getBalance();
+
+            // ✅ Générer référence et date
+            String referenceNumber = "TXN" + System.currentTimeMillis();
+            LocalDateTime transactionDate = LocalDateTime.now();
+
+            // ✅ ENREGISTRER LA TRANSACTION EN BASE DE DONNÉES
+            Transaction transaction = new Transaction();
+            transaction.setAccount(account);
+            transaction. setType(request.getType(). toLowerCase());
+            transaction. setAmount(amount);
+            transaction.setDescription(request.getDescription() != null ? request. getDescription() : "Transaction par carte");
+            transaction. setReference(referenceNumber);
+            transaction.setDate(transactionDate);
+            transactionRepository.save(transaction);
+
             // Mettre à jour les compteurs de la carte
-            card. setDailyTransactionCount(card. getDailyTransactionCount() + 1);
-            card. setDailyTransactionTotal(card. getDailyTransactionTotal().add(amount));
+            card. setDailyTransactionCount(card.getDailyTransactionCount() + 1);
+            card.setDailyTransactionTotal(card.getDailyTransactionTotal().add(amount));
             card.setLastTransactionDate(java.time.LocalDate.now());
 
             // Sauvegarder
             bankAccountRepository.save(account);
             cardRepository.save(card);
 
-            // Générer une référence
-            String referenceNumber = "TXN" + System.currentTimeMillis();
+            // ✅ ENVOYER L'EMAIL DE CONFIRMATION
+            try {
+                emailService.sendTransactionConfirmationEmail(
+                        user.getEmail(),
+                        user.getFirstName(),
+                        user. getLastName(),
+                        request.getType(),
+                        amount,
+                        referenceNumber,
+                        transactionDate,
+                        request.getDescription(),
+                        card.getCardType().getDisplayName(),
+                        card.getId(),
+                        account.getAccountNumber(),
+                        oldBalance,
+                        newBalance
+                );
+            } catch (Exception emailError) {
+                System.err.println("⚠️ Erreur envoi email de confirmation: " + emailError.getMessage());
+            }
 
             // Réponse de succès
             response.put("success", true);
             response.put("message", "Transaction effectuée avec succès");
+            response. put("transactionId", transaction. getId());
             response.put("referenceNumber", referenceNumber);
-            response.put("amount", amount);
-            response.put("type", request.getType());
-            response. put("newBalance", account.getBalance());
-            response.put("transactionDate", java.time.LocalDateTime.now());
+            response. put("amount", amount);
+            response. put("type", request.getType());
+            response.put("description", transaction.getDescription());
+            response.put("oldBalance", oldBalance);
+            response.put("newBalance", newBalance);
+            response.put("transactionDate", transactionDate);
             response.put("remainingDailyLimit",
-                    card.getDailyTransactionLimit() != null ?
-                            card.getDailyTransactionLimit(). subtract(card.getDailyTransactionTotal()) : null);
+                    card. getDailyTransactionLimit() != null ?
+                            card. getDailyTransactionLimit().subtract(card.getDailyTransactionTotal()) : null);
             response.put("remainingDailyTransactions",
                     card. getMaxDailyTransactions() != null ?
-                            card.getMaxDailyTransactions() - card.getDailyTransactionCount() : null);
+                            card. getMaxDailyTransactions() - card.getDailyTransactionCount() : null);
 
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
-            e. printStackTrace();
+            e.printStackTrace();
             response.put("success", false);
-            response.put("message", "Erreur lors du traitement de la transaction: " + e. getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR). body(response);
+            response.put("message", "Erreur lors du traitement de la transaction: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
 
-    /**
-     * Bloquer une carte
-     */
     @PostMapping("/{cardId}/block")
     public ResponseEntity<Map<String, Object>> blockCard(
             @PathVariable Long cardId,
@@ -453,7 +477,7 @@ public class BankCardController {
 
             BankCard card = cardRepository.findById(cardId).orElse(null);
 
-            if (card == null || ! card.getAccount(). getUser().getId(). equals(user.getId())) {
+            if (card == null || !card.getAccount().getUser().getId().equals(user. getId())) {
                 response.put("success", false);
                 response.put("message", "Carte non trouvée ou non autorisée");
                 return ResponseEntity.status(HttpStatus. FORBIDDEN).body(response);
@@ -474,9 +498,6 @@ public class BankCardController {
         }
     }
 
-    /**
-     * Débloquer une carte
-     */
     @PostMapping("/{cardId}/unblock")
     public ResponseEntity<Map<String, Object>> unblockCard(@PathVariable Long cardId) {
         Map<String, Object> response = new HashMap<>();
@@ -485,9 +506,9 @@ public class BankCardController {
             BankCard card = cardRepository.findById(cardId).orElse(null);
 
             if (card == null) {
-                response. put("success", false);
-                response. put("message", "Carte non trouvée");
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+                response.put("success", false);
+                response.put("message", "Carte non trouvée");
+                return ResponseEntity. status(HttpStatus. NOT_FOUND). body(response);
             }
 
             card.unblockCard();
@@ -504,9 +525,6 @@ public class BankCardController {
         }
     }
 
-    /**
-     * Ajouter une carte
-     */
     @PostMapping("/add")
     public ResponseEntity<Map<String, Object>> addCard(
             @Valid @RequestBody AddCardRequest request,
@@ -521,17 +539,17 @@ public class BankCardController {
             if (user == null) {
                 response.put("success", false);
                 response.put("message", "Session expirée.  Veuillez vous reconnecter.");
-                return ResponseEntity. status(401).body(response);
+                return ResponseEntity.status(401).body(response);
             }
 
             String rateLimitKey = user.getEmail() + ":" + clientIp;
-            if (! rateLimitingService. isAllowed(rateLimitKey)) {
+            if (! rateLimitingService.isAllowed(rateLimitKey)) {
                 response.put("success", false);
                 response.put("message", "Trop de tentatives. Veuillez réessayer dans 15 minutes.");
                 return ResponseEntity.status(429).body(response);
             }
 
-            if (bindingResult. hasErrors()) {
+            if (bindingResult.hasErrors()) {
                 response.put("success", false);
                 response.put("message", "Données invalides: " + bindingResult.getFieldError(). getDefaultMessage());
                 return ResponseEntity. badRequest().body(response);
@@ -552,13 +570,13 @@ public class BankCardController {
                 return ResponseEntity.status(403). body(response);
             }
 
-            CardValidationService.ValidationResult validation = cardValidationService.validateCardAddition(
-                    request.getAccountId(), request. getCardType(), request.getPin());
+            CardValidationService.ValidationResult validation = cardValidationService. validateCardAddition(
+                    request.getAccountId(), request.getCardType(), request.getPin());
 
-            if (! validation.isValid()) {
-                response. put("success", false);
-                response. put("message", validation.getMessage());
-                return ResponseEntity.badRequest(). body(response);
+            if (!validation.isValid()) {
+                response.put("success", false);
+                response.put("message", validation. getMessage());
+                return ResponseEntity.badRequest().body(response);
             }
 
             BankCard newCard = bankAccountService.createCards(account,
@@ -569,7 +587,7 @@ public class BankCardController {
 
             response.put("success", true);
             response.put("message", "Carte ajoutée avec succès");
-            response.put("cardType", newCard.getCardType(). getDisplayName());
+            response.put("cardType", newCard.getCardType().getDisplayName());
 
             return ResponseEntity. ok(response);
 
@@ -583,8 +601,6 @@ public class BankCardController {
             }
         }
     }
-
-    // ==================== MÉTHODE UTILITAIRE ====================
 
     private User getAuthenticatedUser() {
         try {

@@ -8,6 +8,9 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import jakarta.mail.internet.MimeMessage;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
 @Service
 public class EmailService {
     
@@ -315,7 +318,122 @@ public class EmailService {
 
 
 
+// ==================== EMAIL DE CONFIRMATION DE TRANSACTION ====================
 
+    /**
+     * Envoie un email de confirmation de transaction
+     */
+    public void sendTransactionConfirmationEmail(
+            String toEmail,
+            String firstName,
+            String lastName,
+            String transactionType,
+            BigDecimal amount,
+            String reference,
+            LocalDateTime transactionDate,
+            String description,
+            String cardType,
+            Long cardId,
+            String accountNumber,
+            BigDecimal oldBalance,
+            BigDecimal newBalance) {
+
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setFrom(fromEmail);
+            helper.setTo(toEmail);
+
+            String subject = transactionType. equalsIgnoreCase("credit")
+                    ? "💰 Dépôt confirmé - SecureBank"
+                    : "💸 Retrait confirmé - SecureBank";
+
+            helper.setSubject(subject);
+            helper.setText(buildTransactionEmailTemplate(
+                    firstName, lastName, transactionType, amount, reference,
+                    transactionDate, description, cardType, cardId, accountNumber,
+                    oldBalance, newBalance
+            ), true);
+
+            mailSender.send(message);
+            System.out.println("✅ Email de confirmation de transaction envoyé à: " + toEmail);
+
+        } catch (Exception e) {
+            System. err.println("❌ Erreur envoi email transaction: " + e. getMessage());
+            System.out.println("=== TRANSACTION (CONSOLE) ===");
+            System.out. println("To: " + toEmail + " | Type: " + transactionType + " | Montant: " + amount + " MAD | Ref: " + reference);
+            System.out.println("=============================");
+        }
+    }
+
+    /**
+     * Template HTML pour l'email de confirmation de transaction
+     */
+    private String buildTransactionEmailTemplate(
+            String firstName, String lastName, String transactionType, BigDecimal amount,
+            String reference, LocalDateTime transactionDate, String description,
+            String cardType, Long cardId, String accountNumber,
+            BigDecimal oldBalance, BigDecimal newBalance) {
+
+        boolean isCredit = transactionType.equalsIgnoreCase("credit");
+        String typeLabel = isCredit ?  "Crédit (Dépôt)" : "Débit (Retrait)";
+        String typeIcon = isCredit ?  "💰" : "💸";
+        String amountSign = isCredit ?  "+" : "-";
+        String amountColor = isCredit ?  "#4CAF50" : "#f44336";
+        String headerColor = isCredit ? "#4CAF50" : "#f44336";
+
+        String formattedDate = transactionDate. format(java.time.format.DateTimeFormatter. ofPattern("dd/MM/yyyy à HH:mm:ss"));
+
+        return "<!DOCTYPE html><html><head><meta charset='UTF-8'></head>" +
+                "<body style='font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f5f5f5;'>" +
+                "<div style='max-width: 600px; margin: 0 auto; background: white;'>" +
+
+                // Header
+                "<div style='background: " + headerColor + "; color: white; padding: 25px; text-align: center;'>" +
+                "<h1 style='margin: 0;'>🏦 SecureBank</h1>" +
+                "<p style='margin: 5px 0 0 0;'>Confirmation de Transaction</p></div>" +
+
+                // Content
+                "<div style='padding: 25px;'>" +
+                "<div style='text-align: center; margin-bottom: 20px;'>" +
+                "<span style='background: #4CAF50; color: white; padding: 8px 20px; border-radius: 20px;'>✅ Transaction Réussie</span></div>" +
+
+                "<p>Bonjour <strong>" + firstName + " " + lastName + "</strong>,</p>" +
+                "<p>Votre transaction a été effectuée avec succès. </p>" +
+
+                // Transaction details
+                "<div style='background: #f8f9fa; border-left: 4px solid " + amountColor + "; border-radius: 8px; padding: 20px; margin: 20px 0;'>" +
+                "<div style='color: #666;'>" + typeIcon + " " + typeLabel + "</div>" +
+                "<div style='font-size: 28px; font-weight: bold; color: " + amountColor + "; margin: 10px 0;'>" + amountSign + amount. setScale(2) + " MAD</div>" +
+                "<table style='width: 100%;'>" +
+                "<tr><td style='padding: 8px 0; color: #666;'>Référence</td><td style='text-align: right; font-weight: 600;'>" + reference + "</td></tr>" +
+                "<tr><td style='padding: 8px 0; color: #666;'>Date</td><td style='text-align: right; font-weight: 600;'>" + formattedDate + "</td></tr>" +
+                "<tr><td style='padding: 8px 0; color: #666;'>Description</td><td style='text-align: right; font-weight: 600;'>" + (description != null ? description : "Transaction") + "</td></tr>" +
+                "<tr><td style='padding: 8px 0; color: #666;'>Carte</td><td style='text-align: right; font-weight: 600;'>" + cardType + " (****" + cardId + ")</td></tr>" +
+                "<tr><td style='padding: 8px 0; color: #666;'>Compte</td><td style='text-align: right; font-weight: 600;'>" + accountNumber + "</td></tr>" +
+                "</table></div>" +
+
+                // Balance
+                "<div style='background: linear-gradient(135deg, #667eea, #764ba2); color: white; border-radius: 8px; padding: 15px; margin: 20px 0;'>" +
+                "<div style='display: flex; justify-content: space-between; margin: 5px 0;'><span>Ancien solde</span><span>" + oldBalance.setScale(2) + " MAD</span></div>" +
+                "<div style='display: flex; justify-content: space-between; margin: 5px 0;'><span>Transaction</span><span>" + amountSign + amount. setScale(2) + " MAD</span></div>" +
+                "<div style='border-top: 1px solid rgba(255,255,255,0.3); margin-top: 10px; padding-top: 10px; display: flex; justify-content: space-between;'>" +
+                "<span style='font-weight: bold;'>Nouveau solde</span><span style='font-weight: bold; font-size: 18px;'>" + newBalance.setScale(2) + " MAD</span></div></div>" +
+
+                // Security
+                "<div style='background: #fff3e0; border-left: 4px solid #ff9800; border-radius: 8px; padding: 15px; margin: 20px 0;'>" +
+                "<strong style='color: #e65100;'>🔒 Sécurité</strong><br>" +
+                "<span style='color: #f57c00; font-size: 13px;'>Si vous n'êtes pas à l'origine de cette transaction, contactez-nous immédiatement.</span></div>" +
+
+                "<p>Merci de votre confiance. <br><strong>L'équipe SecureBank</strong></p></div>" +
+
+                // Footer
+                "<div style='background: #f5f5f5; padding: 15px; text-align: center; color: #666; font-size: 11px;'>" +
+                "© 2024 SecureBank - Email automatique</div>" +
+
+                "</div></body></html>";
+    }
 
 
 }
