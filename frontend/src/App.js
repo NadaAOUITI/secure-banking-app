@@ -23,7 +23,7 @@ function App() {
         credentials: 'include'
       });
 
-      if (response. ok) {
+      if (response.ok) {
         const accountData = await response.json();
         setUser({
           firstName: accountData.firstName,
