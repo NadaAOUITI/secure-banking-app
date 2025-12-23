@@ -1,5 +1,6 @@
 package com.securebank.service;
 
+import com.securebank.factory.BankAccountFactory;
 import com.securebank.model.BankAccount;
 import com.securebank.model.BankCard;
 import com.securebank.model.User;
@@ -22,31 +23,25 @@ public class BankAccountService {
     
     private final BankAccountRepository accountRepository;
     private final BankCardRepository cardRepository;
+    private final BankAccountFactory accountFactory;
     private final EncryptionService encryptionService;
     private final PasswordEncoder passwordEncoder;
     
     @Autowired
     public BankAccountService(BankAccountRepository accountRepository, 
                              BankCardRepository cardRepository,
+                             BankAccountFactory accountFactory,
                              EncryptionService encryptionService,
                              PasswordEncoder passwordEncoder) {
         this.accountRepository = accountRepository;
         this.cardRepository = cardRepository;
+        this.accountFactory = accountFactory;
         this.encryptionService = encryptionService;
         this.passwordEncoder = passwordEncoder;
     }
     
     public BankAccount createAccount(User user, String accountTypeStr, BigDecimal initialDeposit) {
-        BankAccount.AccountType accountType = BankAccount.AccountType.valueOf(accountTypeStr.toUpperCase());
-        
-        // Validate minimum deposit if provided
-        if (initialDeposit != null && initialDeposit.compareTo(new BigDecimal("300")) < 0) {
-            throw new IllegalArgumentException("Le dépôt initial doit être d'au moins 300 TND");
-        }
-        
-        BankAccount account = new BankAccount(user, accountType, initialDeposit);
-        account.setAccountNumber(generateAccountNumber());
-        
+        BankAccount account = accountFactory.createAccount(user, accountTypeStr, initialDeposit);
         return accountRepository.save(account);
     }
     
@@ -89,16 +84,7 @@ public class BankAccountService {
         cardRepository.save(card);
     }
     
-    private String generateAccountNumber() {
-        SecureRandom random = new SecureRandom();
-        StringBuilder accountNumber = new StringBuilder("TN59");
-        
-        for (int i = 0; i < 16; i++) {
-            accountNumber.append(random.nextInt(10));
-        }
-        
-        return accountNumber.toString();
-    }
+
     
     private String generateCardNumber() {
         SecureRandom random = new SecureRandom();
