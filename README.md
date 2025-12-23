@@ -71,20 +71,21 @@ secure-banking-app/
 - ✅ **Authentication bypass attempt**
 - ✅ **Session hijacking simulation**
 - ✅ **Document results and mitigation measures**
-#### 4. Fund Transfers
-- ✅ Implement transfer to a beneficiary with OTP confirmation
-- ✅ Implement transfer history logging
-- ✅ Send confirmation email for every transfer
-- ✅ **Validate input to prevent SQL/command injection** *(Déjà implémenté globalement : ValidationInterceptor + InputSanitizer + ValidationService + JPA/Hibernate requêtes paramétrées)*
-
 
 ### 🔄 **Tâches En Cours**
+
+#### 4. Fund Transfers
+- [ ] Implement transfer to a beneficiary with OTP confirmation
+- [ ] Implement transfer history logging
+- [ ] Send confirmation email for every transfer
+- ✅ **Validate input to prevent SQL/command injection** *(Déjà implémenté globalement : ValidationInterceptor + InputSanitizer + ValidationService + JPA/Hibernate requêtes paramétrées)*
+
+### 📋 **Tâches Restantes**
+
 #### 5. Transaction History
 - [ ] Retrieve transaction history from a secure database
 - [ ] Filter transactions by date, amount, or beneficiary
 - [ ] Display securely on the app interface without exposing sensitive info
-
-### 📋 **Tâches Restantes**
 
 #### 7. Optional / Bonus Features
 - [ ] Admin panel to monitor user activity and security alerts
