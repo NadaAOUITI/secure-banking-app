@@ -134,18 +134,8 @@ const ModernDashboard = ({ user, accounts = [], onLogout, onNavigateToBeneficiar
               <span className="action-text">Transactions</span>
             </button>
 
-            {/* Historique */}
-            <button
-                className="quick-action-btn history"
-                onClick={() => {
-                  setActiveView("transfers");
-                  // L'historique sera affiché dans TransferManagement
-                }}
-                title="Consulter l'historique"
-            >
-              <span className="action-icon">📊</span>
-              <span className="action-text">Historique</span>
-            </button>
+
+
 
             {/* Paramètres */}
             <button
